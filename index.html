@@ -15,7 +15,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
   :root{
@@ -29,6 +29,7 @@
 
     --serif: "Newsreader", Georgia, "Times New Roman", serif;
     --mono:  "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    --type:  "Courier Prime", "Courier New", Courier, ui-monospace, monospace;
 
     --measure: 39rem;
     --gap: clamp(2rem, 5vw, 4.5rem);
@@ -200,12 +201,12 @@
 
   /* ---------- typewriter hero ---------- */
   .typewriter{
-    font-size:clamp(1.25rem, 3.5vw, 1.55rem);
-    font-style:italic;
-    line-height:1.35;
+    font-family:var(--type);
+    font-size:clamp(1.05rem, 2.9vw, 1.35rem);
+    line-height:1.5;
     color:var(--ink);
     margin:0 0 1.2rem;
-    min-height:4.2rem;          /* reserve ~2 lines so the bio doesn't jump */
+    min-height:4.6rem;          /* reserve ~2 lines so the paragraph doesn't jump */
   }
   .tw-caret{
     display:inline-block;
@@ -339,8 +340,6 @@
       <a href="#education">Education</a>
       <a href="#publications">Publications</a>
       <a href="#talks">Talks</a>
-      <a href="#honors">Honors</a>
-      <a href="#teaching">Teaching</a>
       <a href="#contact">Contact</a>
     </nav>
   </aside>
@@ -552,80 +551,6 @@
       </article>
     </section>
 
-    <section class="section reveal" id="honors">
-      <p class="eyebrow">Honors</p>
-      <h2>Honors &amp; awards</h2>
-
-      <div class="entry">
-        <div>
-          <p class="e-title">Hoopes Prize</p>
-          <p class="e-sub">Harvard Faculty of Arts and Sciences — the only thesis awarded across the physics and astronomy departments</p>
-        </div>
-        <div class="e-date">2025</div>
-      </div>
-
-      <div class="entry">
-        <div>
-          <p class="e-title">Centennial Fellowship <span class="dim">(declined)</span></p>
-          <p class="e-sub">Princeton University, Department of Physics</p>
-        </div>
-        <div class="e-date">2025</div>
-      </div>
-
-      <div class="entry">
-        <div>
-          <p class="e-title">Berkeley Fellowship for Graduate Study <span class="dim">(declined)</span></p>
-          <p class="e-sub">UC Berkeley, Mathematical &amp; Physical Sciences</p>
-        </div>
-        <div class="e-date">2025</div>
-      </div>
-
-      <div class="entry">
-        <div>
-          <p class="e-title">Harvard College Research Program (HCRP) Fellowship</p>
-          <p class="e-sub">Harvard Office of Undergraduate Research and Fellowships</p>
-        </div>
-        <div class="e-date">2023, 2024</div>
-      </div>
-
-      <div class="entry">
-        <div>
-          <p class="e-title">PRISE Fellowship</p>
-          <p class="e-sub">Harvard Program for Research in Science and Engineering</p>
-        </div>
-        <div class="e-date">2022</div>
-      </div>
-    </section>
-
-    <section class="section reveal" id="teaching">
-      <p class="eyebrow">Teaching</p>
-      <h2>Teaching</h2>
-
-      <div class="entry">
-        <div>
-          <p class="e-title">Astronomy 140 — Introductory General Relativity</p>
-          <p class="e-sub">Teaching Assistant — a role ordinarily held by a graduate student</p>
-        </div>
-        <div class="e-date">Fall 2024</div>
-      </div>
-
-      <div class="entry">
-        <div>
-          <p class="e-title">Physics 143a — Quantum Mechanics</p>
-          <p class="e-sub">Course Assistant</p>
-        </div>
-        <div class="e-date">Fall 2023 &amp; 2024</div>
-      </div>
-
-      <div class="entry">
-        <div>
-          <p class="e-title">Physics 210 — General Relativity (graduate)</p>
-          <p class="e-sub">Course Assistant</p>
-        </div>
-        <div class="e-date">Spring 2024</div>
-      </div>
-    </section>
-
     <section class="section reveal" id="contact">
       <p class="eyebrow">Contact</p>
       <h2>Get in touch</h2>
@@ -662,25 +587,33 @@
     setTimeout(() => el.classList.add('in'), 80 + i * 90);
   });
 
-  // Typewriter hero — types each question, pauses, erases, moves to the next.
-  // EDIT: add or change lines here.
+  // Typewriter hero — types each line, pauses, then deletes before the next.
+  // A line can keep part of the previous one: `keep` is how many leading
+  // characters stay on screen before the rest is retyped. That's how the third
+  // line keeps "How can we study it with " and just swaps the ending.
+  // EDIT: change the lines, the STEM, or the keep values below.
   (function(){
     const tw = document.getElementById('tw-text');
     if (!tw) return;
-    const phrases = [
-      "What is the nature of dark matter?",
-      "How can we study it with astrophysical observations?"
+    const STEM = "How can we study it with ";
+    const steps = [
+      { text: "What is the nature of dark matter?",     keep: 0 },
+      { text: STEM + "gravitational lensing of light?", keep: 0 },
+      { text: STEM + "gravitational-wave lensing?",     keep: STEM.length },
+      { text: "Is this possible?",                      keep: 0 }
     ];
-    if (reduce){ tw.textContent = phrases[0]; return; }
-    let p = 0, c = 0, deleting = false;
-    (function tick(){
-      const s = phrases[p];
-      c += deleting ? -1 : 1;
-      tw.textContent = s.slice(0, c);
-      if (!deleting && c === s.length){ deleting = true; return setTimeout(tick, 1900); }
-      if (deleting && c === 0){ deleting = false; p = (p + 1) % phrases.length; return setTimeout(tick, 500); }
-      setTimeout(tick, deleting ? 32 : 58 + Math.random() * 42);
-    })();
+    if (reduce){ tw.textContent = steps[0].text; return; }
+    let si = 0, cur = "", mode = "delete";
+    function tick(){
+      const { text, keep } = steps[si];
+      if (mode === "delete"){
+        if (cur.length > keep){ cur = cur.slice(0, -1); tw.textContent = cur; return setTimeout(tick, 30); }
+        mode = "type"; return setTimeout(tick, 140);
+      }
+      if (cur.length < text.length){ cur = text.slice(0, cur.length + 1); tw.textContent = cur; return setTimeout(tick, 56 + Math.random() * 40); }
+      mode = "delete"; si = (si + 1) % steps.length; return setTimeout(tick, 1900);
+    }
+    setTimeout(tick, 600);
   })();
 </script>
 </body>
