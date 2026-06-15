@@ -141,7 +141,7 @@
 
   .links{
     margin-top:.8rem;
-    display:flex; flex-direction:column; gap:.5rem;
+    display:flex; flex-flow:row wrap; gap:.6rem 1.2rem;
   }
   .links a{
     font-family:var(--mono);
@@ -156,6 +156,7 @@
 
   .cv-btn{
     margin-top:.4rem !important;
+    flex-basis:100%;
     color:var(--accent) !important;
     border:1px solid var(--accent);
     border-radius:3px;
@@ -349,7 +350,6 @@
 
     <section class="section reveal" id="about">
       <p class="eyebrow">About</p>
-      <p class="typewriter"><span id="tw-text"></span><span class="tw-caret" aria-hidden="true"></span></p>
       <!-- EDIT: I drafted this from your papers — please adjust to taste. -->
       <p class="lead">I’m a first-year PhD student in Physics at Harvard University,
         working with <a class="inline" href="https://dvorkin.physics.harvard.edu/">Prof. Cora Dvorkin</a>
@@ -358,6 +358,7 @@
 
     <section class="section reveal" id="research">
       <p class="eyebrow">Research</p>
+      <p class="typewriter"><span id="tw-text"></span><span class="tw-caret" aria-hidden="true"></span></p>
       <p>I’m broadly interested in using astrophysical observations to shed light
         on the nature of dark matter. In particular, I use the gravitational
         lensing of both light and gravitational waves to probe dark-matter
