@@ -237,6 +237,14 @@
   }
   .pub .pub-links a:hover{ border-color:var(--accent); }
 
+  /* ---------- talks (reuse .pub grid) ---------- */
+  .talk .event{ margin:0; color:var(--ink); }
+  .talk .meta{
+    font-family:var(--mono); font-size:.72rem;
+    color:var(--faint); margin-top:.45rem;
+  }
+  .talk .meta .type{ color:var(--accent); letter-spacing:.06em; }
+
   /* ---------- footer ---------- */
   .foot{
     border-top:1px solid var(--line);
@@ -285,6 +293,7 @@
       <a href="#about">About</a>
       <a href="#research">Research</a>
       <a href="#publications">Publications</a>
+      <a href="#talks">Talks</a>
       <a href="#contact">Contact</a>
     </nav>
 
@@ -303,7 +312,8 @@
       <p class="eyebrow">About</p>
       <!-- EDIT: I drafted this from your papers — please adjust to taste. -->
       <p class="lead">I’m a first-year PhD student in Physics at Harvard University,
-        working in theoretical and computational cosmology.</p>
+        working in <a class="inline" href="https://dvorkin.physics.harvard.edu/">Prof. Cora Dvorkin’s group</a>
+        on theoretical and computational cosmology.</p>
       <p>My research uses gravitational lensing as a precision tool to probe the
         nature of dark matter and the physics of the early universe — from the
         imprints of wave-like dark matter in cluster lenses to the lensing of
@@ -384,6 +394,15 @@
       </article>
 
       <article class="pub">
+        <div class="year"></div>
+        <div>
+          <p class="title">HIP 61637 b: TESS brown dwarf in a near-circular orbit around a massive A-type star</p>
+          <p class="authors"><span class="me">N. Ephremidze</span>, D. Latham, et al.</p>
+          <p><span class="status">In preparation for submission to</span> <span class="venue">The Astronomical Journal</span></p>
+        </div>
+      </article>
+
+      <article class="pub">
         <div class="year">2022</div>
         <div>
           <p class="title">TOI-3662b: A borderline brown dwarf orbiting a sub-giant star from the TESS mission</p>
@@ -392,6 +411,92 @@
           <div class="pub-links">
             <a href="https://ui.adsabs.harvard.edu/abs/2022AAS...24033102E">ADS</a>
           </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="section reveal" id="talks">
+      <p class="eyebrow">Talks</p>
+      <h2>Research talks</h2>
+
+      <article class="pub talk">
+        <div class="year">2026</div>
+        <div>
+          <p class="title">Extremely magnified caustic-crossing stars as probes of primordial black holes</p>
+          <p class="event">Strong Lensing Mission Concept Workshop, Caltech, Pasadena, CA</p>
+          <div class="meta"><span class="type">CONFERENCE</span> · May 2026</div>
+        </div>
+      </article>
+
+      <article class="pub talk">
+        <div class="year">2026</div>
+        <div>
+          <p class="title">Fast Fourier Transform evaluation of the Fresnel integral for gravitational wave lensing</p>
+          <p class="event">UCLA, Los Angeles, CA</p>
+          <div class="meta"><span class="type">SEMINAR</span> · May 2026</div>
+        </div>
+      </article>
+
+      <article class="pub talk">
+        <div class="year">2026</div>
+        <div>
+          <p class="title">Statistical imprints of wave-like dark matter on multiply-imaged galaxies in strong cluster lenses from JWST</p>
+          <p class="event">UCLA, Los Angeles, CA</p>
+          <div class="meta"><span class="type">SEMINAR</span> · May 2026</div>
+        </div>
+      </article>
+
+      <article class="pub talk">
+        <div class="year">2026</div>
+        <div>
+          <p class="title">Fast Fourier Transform evaluation of the Fresnel integral for gravitational wave lensing</p>
+          <p class="event">Boston Cosmology Meeting, Tufts University, Boston, MA</p>
+          <div class="meta"><span class="type">SEMINAR</span> · March 2026</div>
+        </div>
+      </article>
+
+      <article class="pub talk">
+        <div class="year">2025</div>
+        <div>
+          <p class="title">Disentangling dark deflectors: probing dark matter substructure</p>
+          <p class="event">Harvard Astrophysics Senior Thesis Presentations, Harvard–Smithsonian Center for Astrophysics, Cambridge, MA</p>
+          <div class="meta"><span class="type">THESIS</span> · April 2025</div>
+        </div>
+      </article>
+
+      <article class="pub talk">
+        <div class="year">2025</div>
+        <div>
+          <p class="title">Dark matter substructure or source modeling systematics? A case study of cluster lens Abell S1063</p>
+          <p class="event">Strong Lensing 2025 Workshop, Harvard–Smithsonian Center for Astrophysics, Cambridge, MA</p>
+          <div class="meta"><span class="type">CONFERENCE</span> · March 2025</div>
+        </div>
+      </article>
+
+      <article class="pub talk">
+        <div class="year">2024</div>
+        <div>
+          <p class="title">Looking for dark perturbers with JWST using gravitational lensing</p>
+          <p class="event">12th Annual Undergraduate Cosmology Workshop, MIT, Cambridge, MA</p>
+          <div class="meta"><span class="type">CONFERENCE</span> · July 2024</div>
+        </div>
+      </article>
+
+      <article class="pub talk">
+        <div class="year">2022</div>
+        <div>
+          <p class="title">An over-grown planet or a failed star? HIP 61637 b: a TESS brown dwarf around a massive A-type star</p>
+          <p class="event">Harvard PRISE Symposium, Cambridge, MA</p>
+          <div class="meta"><span class="type">POSTER</span> · August 2022</div>
+        </div>
+      </article>
+
+      <article class="pub talk">
+        <div class="year">2022</div>
+        <div>
+          <p class="title">TOI-3662b: A borderline brown dwarf orbiting a sub-giant star from the TESS mission</p>
+          <p class="event">240th Meeting of the American Astronomical Society, Pasadena, CA</p>
+          <div class="meta"><span class="type">CONFERENCE</span> · June 2022</div>
         </div>
       </article>
     </section>
