@@ -198,6 +198,25 @@
 
   .content a.inline{ color:var(--accent); text-underline-offset:2px; }
 
+  /* ---------- typewriter hero ---------- */
+  .typewriter{
+    font-size:clamp(1.25rem, 3.5vw, 1.55rem);
+    font-style:italic;
+    line-height:1.35;
+    color:var(--ink);
+    margin:0 0 1.2rem;
+    min-height:4.2rem;          /* reserve ~2 lines so the bio doesn't jump */
+  }
+  .tw-caret{
+    display:inline-block;
+    width:2px; height:1.1em;
+    background:var(--accent);
+    margin-left:3px; vertical-align:-0.16em;
+    animation:tw-blink 1.05s steps(1) infinite;
+  }
+  @keyframes tw-blink{ 50%{ opacity:0; } }
+  @media (prefers-reduced-motion: reduce){ .tw-caret{ display:none; } }
+
   .interests{
     list-style:none; margin:1rem 0 0; padding:0;
     display:flex; flex-wrap:wrap; gap:.5rem;
@@ -331,6 +350,7 @@
 
     <section class="section reveal" id="about">
       <p class="eyebrow">About</p>
+      <p class="typewriter"><span id="tw-text"></span><span class="tw-caret" aria-hidden="true"></span></p>
       <!-- EDIT: I drafted this from your papers — please adjust to taste. -->
       <p class="lead">I’m a first-year PhD student in Physics at Harvard University,
         working with <a class="inline" href="https://dvorkin.physics.harvard.edu/">Prof. Cora Dvorkin</a>
@@ -349,6 +369,7 @@
         <li>Dark matter</li>
         <li>Gravitational lensing</li>
         <li>Gravitational-wave lensing</li>
+        <li>Cosmology</li>
       </ul>
     </section>
 
@@ -640,6 +661,27 @@
     if (reduce){ el.classList.add('in'); return; }
     setTimeout(() => el.classList.add('in'), 80 + i * 90);
   });
+
+  // Typewriter hero — types each question, pauses, erases, moves to the next.
+  // EDIT: add or change lines here.
+  (function(){
+    const tw = document.getElementById('tw-text');
+    if (!tw) return;
+    const phrases = [
+      "What is the nature of dark matter?",
+      "How can we study it with astrophysical observations?"
+    ];
+    if (reduce){ tw.textContent = phrases[0]; return; }
+    let p = 0, c = 0, deleting = false;
+    (function tick(){
+      const s = phrases[p];
+      c += deleting ? -1 : 1;
+      tw.textContent = s.slice(0, c);
+      if (!deleting && c === s.length){ deleting = true; return setTimeout(tick, 1900); }
+      if (deleting && c === 0){ deleting = false; p = (p + 1) % phrases.length; return setTimeout(tick, 500); }
+      setTimeout(tick, deleting ? 32 : 58 + Math.random() * 42);
+    })();
+  })();
 </script>
 </body>
 </html>
