@@ -245,6 +245,22 @@
   }
   .talk .meta .type{ color:var(--accent); letter-spacing:.06em; }
 
+  /* ---------- dated entries (education, teaching, honors) ---------- */
+  .entry{
+    display:grid; grid-template-columns:1fr auto; gap:1rem 1.4rem;
+    align-items:baseline;
+    padding:1.05rem 0; border-top:1px solid var(--line);
+  }
+  .entry:first-of-type{ border-top:none; padding-top:.2rem; }
+  .e-title{ font-size:1.08rem; font-weight:500; margin:0 0 .25rem; line-height:1.35; }
+  .e-title .dim{ color:var(--faint); font-weight:400; }
+  .e-sub{ color:var(--muted); font-size:.98rem; margin:0; }
+  .e-sub + .e-sub{ margin-top:.2rem; }
+  .e-date{
+    font-family:var(--mono); font-size:.74rem; color:var(--faint);
+    white-space:nowrap; text-align:right;
+  }
+
   /* ---------- footer ---------- */
   .foot{
     border-top:1px solid var(--line);
@@ -273,6 +289,8 @@
     .content{ max-width:none; }
     .pub{ grid-template-columns:1fr; gap:.2rem; }
     .pub .year{ padding-top:0; }
+    .entry{ grid-template-columns:1fr; gap:.35rem; }
+    .e-date{ text-align:left; }
   }
 </style>
 </head>
@@ -292,8 +310,11 @@
     <nav class="nav" aria-label="Sections">
       <a href="#about">About</a>
       <a href="#research">Research</a>
+      <a href="#education">Education</a>
       <a href="#publications">Publications</a>
       <a href="#talks">Talks</a>
+      <a href="#honors">Honors</a>
+      <a href="#teaching">Teaching</a>
       <a href="#contact">Contact</a>
     </nav>
 
@@ -323,22 +344,44 @@
     <section class="section reveal" id="research">
       <p class="eyebrow">Research</p>
       <h2>What I work on</h2>
-      <!-- EDIT: drafted from your publications — refine as you like. -->
-      <p>I study what gravitational lensing can reveal about dark matter and
-        fundamental physics. Recent work uses strong lensing of JWST cluster
-        images to search for signatures of wave-like (“fuzzy”) dark matter,
-        develops fast numerical methods for gravitational-wave lensing, and asks
-        whether anomalies in cluster lenses trace genuine dark-matter substructure
-        or modelling systematics.</p>
-      <p>I’m also interested in early-universe cosmology, including primordial
-        features as probes of baryogenesis.</p>
+      <p>I’m broadly interested in using astrophysical observations to shed light
+        on the nature of dark matter. In particular, I use the gravitational
+        lensing of both light and gravitational waves to probe dark-matter
+        substructure at sub-galactic scales — developing new methods, and linking
+        theoretical dark-matter models to observable signatures.</p>
+      <p>My current focus is the lensing of gravitational waves in the LISA band,
+        where dark-matter substructure may leave detectable imprints on the
+        signals the mission observes.</p>
       <ul class="interests">
         <li>Dark matter</li>
-        <li>Strong gravitational lensing</li>
+        <li>Gravitational lensing</li>
         <li>Gravitational-wave lensing</li>
+        <li>LISA</li>
+        <li>Dark-matter substructure</li>
         <li>Cosmology</li>
-        <li>Early universe</li>
       </ul>
+    </section>
+
+    <section class="section reveal" id="education">
+      <p class="eyebrow">Education</p>
+      <h2>Education</h2>
+
+      <div class="entry">
+        <div>
+          <p class="e-title">PhD in Physics</p>
+          <p class="e-sub">Harvard University · Advised by Prof. Cora Dvorkin</p>
+        </div>
+        <div class="e-date">2025 – present</div>
+      </div>
+
+      <div class="entry">
+        <div>
+          <p class="e-title">BA in Physics</p>
+          <p class="e-sub">Harvard University</p>
+          <p class="e-sub">Thesis: <em>Probing dark matter substructure in JWST galaxy clusters with strong gravitational lensing</em></p>
+        </div>
+        <div class="e-date">2021 – 2025</div>
+      </div>
     </section>
 
     <section class="section reveal" id="publications">
@@ -499,6 +542,80 @@
           <div class="meta"><span class="type">CONFERENCE</span> · June 2022</div>
         </div>
       </article>
+    </section>
+
+    <section class="section reveal" id="honors">
+      <p class="eyebrow">Honors</p>
+      <h2>Honors &amp; awards</h2>
+
+      <div class="entry">
+        <div>
+          <p class="e-title">Hoopes Prize</p>
+          <p class="e-sub">Harvard Faculty of Arts and Sciences — the only thesis awarded across the physics and astronomy departments</p>
+        </div>
+        <div class="e-date">2025</div>
+      </div>
+
+      <div class="entry">
+        <div>
+          <p class="e-title">Centennial Fellowship <span class="dim">(declined)</span></p>
+          <p class="e-sub">Princeton University, Department of Physics</p>
+        </div>
+        <div class="e-date">2025</div>
+      </div>
+
+      <div class="entry">
+        <div>
+          <p class="e-title">Berkeley Fellowship for Graduate Study <span class="dim">(declined)</span></p>
+          <p class="e-sub">UC Berkeley, Mathematical &amp; Physical Sciences</p>
+        </div>
+        <div class="e-date">2025</div>
+      </div>
+
+      <div class="entry">
+        <div>
+          <p class="e-title">Harvard College Research Program (HCRP) Fellowship</p>
+          <p class="e-sub">Harvard Office of Undergraduate Research and Fellowships</p>
+        </div>
+        <div class="e-date">2023, 2024</div>
+      </div>
+
+      <div class="entry">
+        <div>
+          <p class="e-title">PRISE Fellowship</p>
+          <p class="e-sub">Harvard Program for Research in Science and Engineering</p>
+        </div>
+        <div class="e-date">2022</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="teaching">
+      <p class="eyebrow">Teaching</p>
+      <h2>Teaching</h2>
+
+      <div class="entry">
+        <div>
+          <p class="e-title">Astronomy 140 — Introductory General Relativity</p>
+          <p class="e-sub">Teaching Assistant — a role ordinarily held by a graduate student</p>
+        </div>
+        <div class="e-date">Fall 2024</div>
+      </div>
+
+      <div class="entry">
+        <div>
+          <p class="e-title">Physics 143a — Quantum Mechanics</p>
+          <p class="e-sub">Course Assistant</p>
+        </div>
+        <div class="e-date">Fall 2023 &amp; 2024</div>
+      </div>
+
+      <div class="entry">
+        <div>
+          <p class="e-title">Physics 210 — General Relativity (graduate)</p>
+          <p class="e-sub">Course Assistant</p>
+        </div>
+        <div class="e-date">Spring 2024</div>
+      </div>
     </section>
 
     <section class="section reveal" id="contact">
