@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  ACADEMIC WEBSITE  —  Nino Ephremidze
+  Single-file, zero build step. Drop into a GitHub Pages repo.
+  Search for "EDIT:" to find anything you may want to change.
+  ============================================================
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nino Ephremidze</title>
+<meta name="description" content="Nino Ephremidze — PhD student in Physics at Harvard University. Research in theoretical and computational cosmology: gravitational lensing, dark matter, and the early universe.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --paper:   #FCFCFA;
+    --ink:     #1B1B19;
+    --muted:   #6E6E68;
+    --faint:   #9A9A92;
+    --line:    #E4E3DD;
+    --accent:  #8B2E3C;            /* garnet — change this to recolour the whole site */
+    --accent-soft: rgba(139,46,60,.07);
+
+    --serif: "Newsreader", Georgia, "Times New Roman", serif;
+    --mono:  "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+    --measure: 39rem;
+    --gap: clamp(2rem, 5vw, 4.5rem);
+  }
+
+  *{ box-sizing:border-box; }
+
+  html{ scroll-behavior:smooth; }
+  @media (prefers-reduced-motion: reduce){ html{ scroll-behavior:auto; } }
+
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--serif);
+    font-size:1.0625rem;
+    line-height:1.66;
+    font-optical-sizing:auto;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+
+  a{ color:inherit; }
+
+  .skip{
+    position:absolute; left:-999px; top:0;
+    background:var(--ink); color:var(--paper);
+    padding:.6rem 1rem; z-index:20; border-radius:0 0 4px 0;
+  }
+  .skip:focus{ left:0; }
+
+  /* ---------- layout ---------- */
+  .layout{
+    max-width:64rem;
+    margin:0 auto;
+    padding:clamp(2.5rem,6vw,5rem) clamp(1.5rem,5vw,3rem);
+    display:grid;
+    grid-template-columns:16.5rem 1fr;
+    gap:var(--gap);
+    align-items:start;
+  }
+
+  /* ---------- sidebar ---------- */
+  .sidebar{
+    position:sticky;
+    top:clamp(2.5rem,6vw,5rem);
+  }
+
+  .avatar{
+    width:7.5rem; height:7.5rem;
+    border-radius:3px;
+    margin-bottom:1.4rem;
+    background:var(--accent-soft);
+    border:1px solid var(--line);
+    display:grid; place-items:center;
+    overflow:hidden;
+    color:var(--accent);
+    font-size:2.4rem; font-weight:500;
+    letter-spacing:.02em;
+  }
+  /* EDIT: to use a real photo, add photo.jpg to your repo and replace the
+     <div class="avatar">NE</div> below with:
+     <img class="avatar" src="photo.jpg" alt="Nino Ephremidze"> */
+  .avatar img{ width:100%; height:100%; object-fit:cover; }
+
+  .name{
+    font-size:1.85rem;
+    font-weight:500;
+    line-height:1.12;
+    margin:0 0 .55rem;
+    letter-spacing:-.01em;
+  }
+  .role{
+    font-family:var(--mono);
+    font-size:.74rem;
+    line-height:1.5;
+    color:var(--ink);
+    margin:0;
+  }
+  .affil{
+    font-family:var(--mono);
+    font-size:.74rem;
+    line-height:1.5;
+    color:var(--muted);
+    margin:.15rem 0 0;
+  }
+
+  .nav{
+    margin:1.9rem 0 1.6rem;
+    border-top:1px solid var(--line);
+    padding-top:1.3rem;
+    display:flex; flex-direction:column; gap:.15rem;
+  }
+  .nav a{
+    font-family:var(--mono);
+    font-size:.78rem;
+    text-decoration:none;
+    color:var(--muted);
+    padding:.18rem 0;
+    display:flex; align-items:center; gap:.6rem;
+    transition:color .18s ease;
+  }
+  .nav a::before{
+    content:""; width:.85rem; height:1px;
+    background:var(--line); transition:all .18s ease;
+  }
+  .nav a:hover{ color:var(--ink); }
+  .nav a.is-active{ color:var(--accent); }
+  .nav a.is-active::before{ width:1.4rem; background:var(--accent); }
+
+  .links{
+    border-top:1px solid var(--line);
+    padding-top:1.3rem;
+    display:flex; flex-direction:column; gap:.5rem;
+  }
+  .links a{
+    font-family:var(--mono);
+    font-size:.78rem;
+    text-decoration:none;
+    color:var(--muted);
+    transition:color .18s ease;
+    width:fit-content;
+  }
+  .links a:hover{ color:var(--accent); }
+  .links a span{ color:var(--faint); }
+
+  .cv-btn{
+    margin-top:.4rem !important;
+    color:var(--accent) !important;
+    border:1px solid var(--accent);
+    border-radius:3px;
+    padding:.4rem .8rem !important;
+    text-align:center;
+    transition:background .18s ease, color .18s ease !important;
+  }
+  .cv-btn:hover{ background:var(--accent); color:var(--paper) !important; }
+
+  /* ---------- content ---------- */
+  .content{ min-width:0; max-width:var(--measure); }
+
+  .section{ margin-bottom:clamp(3rem,6vw,4.2rem); }
+  .section:last-of-type{ margin-bottom:1rem; }
+
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:.7rem;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin:0 0 1rem;
+    display:flex; align-items:center; gap:.8rem;
+  }
+  .eyebrow::after{
+    content:""; flex:1; height:1px;
+    background:var(--line);
+  }
+
+  .section h2{
+    font-size:1.5rem; font-weight:500;
+    letter-spacing:-.01em;
+    margin:0 0 1rem;
+  }
+
+  .content p{ margin:0 0 1rem; }
+  .content p:last-child{ margin-bottom:0; }
+  .lead{ font-size:1.18rem; line-height:1.55; }
+
+  .content a.inline{ color:var(--accent); text-underline-offset:2px; }
+
+  .interests{
+    list-style:none; margin:1rem 0 0; padding:0;
+    display:flex; flex-wrap:wrap; gap:.5rem;
+  }
+  .interests li{
+    font-family:var(--mono); font-size:.76rem;
+    border:1px solid var(--line); border-radius:3px;
+    padding:.3rem .7rem; color:var(--muted);
+  }
+
+  /* ---------- publications (typeset bibliography) ---------- */
+  .pub{
+    display:grid;
+    grid-template-columns:3.2rem 1fr;
+    gap:1.2rem;
+    padding:1.15rem 0;
+    border-top:1px solid var(--line);
+  }
+  .pub:first-of-type{ border-top:none; padding-top:.2rem; }
+  .pub .year{
+    font-family:var(--mono); font-size:.78rem;
+    color:var(--faint); padding-top:.25rem;
+  }
+  .pub .title{
+    font-size:1.08rem; font-weight:500; line-height:1.35;
+    margin:0 0 .3rem;
+  }
+  .pub .authors{ color:var(--muted); font-size:.98rem; margin:0 0 .3rem; }
+  .pub .authors .me{ color:var(--ink); font-style:italic; }
+  .pub .venue{ font-style:italic; color:var(--ink); }
+  .pub .status{ color:var(--muted); }
+  .pub .pub-links{ margin-top:.45rem; display:flex; flex-wrap:wrap; gap:.9rem; }
+  .pub .pub-links a{
+    font-family:var(--mono); font-size:.72rem;
+    text-decoration:none; color:var(--accent);
+    border-bottom:1px solid transparent; transition:border-color .15s ease;
+  }
+  .pub .pub-links a:hover{ border-color:var(--accent); }
+
+  /* ---------- footer ---------- */
+  .foot{
+    border-top:1px solid var(--line);
+    padding-top:1.4rem;
+    font-family:var(--mono); font-size:.72rem; color:var(--faint);
+  }
+  .foot a{ color:var(--muted); text-decoration:none; }
+  .foot a:hover{ color:var(--accent); }
+
+  /* ---------- reveal on load ---------- */
+  .reveal{ opacity:0; transform:translateY(10px); }
+  .reveal.in{ opacity:1; transform:none; transition:opacity .6s ease, transform .6s ease; }
+  @media (prefers-reduced-motion: reduce){
+    .reveal,.reveal.in{ opacity:1; transform:none; transition:none; }
+  }
+
+  :focus-visible{ outline:2px solid var(--accent); outline-offset:3px; border-radius:2px; }
+
+  /* ---------- responsive ---------- */
+  @media (max-width:760px){
+    .layout{ grid-template-columns:1fr; gap:2.5rem; }
+    .sidebar{ position:static; }
+    .nav{ flex-flow:row wrap; gap:.2rem 1.1rem; }
+    .nav a::before{ display:none; }
+    .nav a.is-active::before{ display:none; }
+    .content{ max-width:none; }
+    .pub{ grid-template-columns:1fr; gap:.2rem; }
+    .pub .year{ padding-top:0; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#about">Skip to content</a>
+
+<div class="layout">
+
+  <!-- ============== SIDEBAR ============== -->
+  <aside class="sidebar reveal">
+    <img class="avatar" src="photo.jpg" alt="Nino Ephremidze">
+
+    <h1 class="name">Nino Ephremidze</h1>
+    <p class="role">PhD Student · Physics</p>
+    <p class="affil">Harvard University</p>
+
+    <nav class="nav" aria-label="Sections">
+      <a href="#about">About</a>
+      <a href="#research">Research</a>
+      <a href="#publications">Publications</a>
+      <a href="#contact">Contact</a>
+    </nav>
+
+    <div class="links">
+      <a href="https://inspirehep.net/authors/2894681"><span>&#8599;</span> INSPIRE-HEP</a>
+      <a href="mailto:nino_ephremidze@g.harvard.edu"><span>&#9993;</span> Email</a>
+      <!-- EDIT: to add a CV, put cv.pdf in the repo and uncomment the line below.
+      <a class="cv-btn" href="cv.pdf">Download CV</a> -->
+    </div>
+  </aside>
+
+  <!-- ============== CONTENT ============== -->
+  <main class="content">
+
+    <section class="section reveal" id="about">
+      <p class="eyebrow">About</p>
+      <!-- EDIT: I drafted this from your papers — please adjust to taste. -->
+      <p class="lead">I’m a first-year PhD student in Physics at Harvard University,
+        working in theoretical and computational cosmology.</p>
+      <p>My research uses gravitational lensing as a precision tool to probe the
+        nature of dark matter and the physics of the early universe — from the
+        imprints of wave-like dark matter in cluster lenses to the lensing of
+        gravitational waves.</p>
+    </section>
+
+    <section class="section reveal" id="research">
+      <p class="eyebrow">Research</p>
+      <h2>What I work on</h2>
+      <!-- EDIT: drafted from your publications — refine as you like. -->
+      <p>I study what gravitational lensing can reveal about dark matter and
+        fundamental physics. Recent work uses strong lensing of JWST cluster
+        images to search for signatures of wave-like (“fuzzy”) dark matter,
+        develops fast numerical methods for gravitational-wave lensing, and asks
+        whether anomalies in cluster lenses trace genuine dark-matter substructure
+        or modelling systematics.</p>
+      <p>I’m also interested in early-universe cosmology, including primordial
+        features as probes of baryogenesis.</p>
+      <ul class="interests">
+        <li>Dark matter</li>
+        <li>Strong gravitational lensing</li>
+        <li>Gravitational-wave lensing</li>
+        <li>Cosmology</li>
+        <li>Early universe</li>
+      </ul>
+    </section>
+
+    <section class="section reveal" id="publications">
+      <p class="eyebrow">Publications</p>
+      <h2>Papers &amp; preprints</h2>
+
+      <article class="pub">
+        <div class="year">2026</div>
+        <div>
+          <p class="title">Imprints of wave-like dark matter on strong-lensing anomaly power spectrum from JWST clusters</p>
+          <p class="authors"><span class="me">N. Ephremidze</span>, D. Gilman, C. Dvorkin</p>
+          <p><span class="status">Submitted to</span> <span class="venue">Monthly Notices of the Royal Astronomical Society</span>, 2026</p>
+          <div class="pub-links">
+            <a href="https://arxiv.org/abs/2605.30649">arXiv</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="pub">
+        <div class="year">2026</div>
+        <div>
+          <p class="title">Fast Fourier Transform evaluation of the Fresnel integral for gravitational wave lensing</p>
+          <p class="authors"><span class="me">N. Ephremidze</span>, M. Kamionkowski, C. Dvorkin</p>
+          <p><span class="venue">Physical Review D</span> <span class="status">(accepted)</span>, 2026</p>
+          <div class="pub-links">
+            <a href="https://journals.aps.org/prd/accepted/10.1103/lqvv-fr8y">Journal</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="pub">
+        <div class="year">2026</div>
+        <div>
+          <p class="title">Primordial features as probes of baryogenesis from supersymmetric flat directions</p>
+          <p class="authors">Y. Wu, X. Chen, <span class="me">N. Ephremidze</span>, L. Li</p>
+          <p><span class="status">Submitted to</span> <span class="venue">Journal of Cosmology and Astroparticle Physics</span>, 2026</p>
+          <div class="pub-links">
+            <a href="https://arxiv.org/abs/2602.08781">arXiv</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="pub">
+        <div class="year">2025</div>
+        <div>
+          <p class="title">Dark matter substructure or source model systematics? A case study of cluster lens Abell S1063</p>
+          <p class="authors"><span class="me">N. Ephremidze</span>, C. Chandrashekar, Ç. Şengül, C. Dvorkin</p>
+          <p><span class="venue">Monthly Notices of the Royal Astronomical Society</span>, 2025</p>
+          <div class="pub-links">
+            <a href="https://academic.oup.com/mnras/advance-article/doi/10.1093/mnras/staf1366/8240274?searchresult=1">Journal</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="pub">
+        <div class="year">2022</div>
+        <div>
+          <p class="title">TOI-3662b: A borderline brown dwarf orbiting a sub-giant star from the TESS mission</p>
+          <p class="authors"><span class="me">N. Ephremidze</span>, D. Latham, A. Bieryla, J. Rodriguez, S. Quinn</p>
+          <p><span class="venue">Bulletin of the American Astronomical Society</span>, 54(6), 331.02, 2022</p>
+          <div class="pub-links">
+            <a href="https://ui.adsabs.harvard.edu/abs/2022AAS...24033102E">ADS</a>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="section reveal" id="contact">
+      <p class="eyebrow">Contact</p>
+      <h2>Get in touch</h2>
+      <p>The best way to reach me is by email at
+        <a class="inline" href="mailto:nino_ephremidze@g.harvard.edu">nino_ephremidze@g.harvard.edu</a>.
+        My publication record is also on
+        <a class="inline" href="https://inspirehep.net/authors/2894681">INSPIRE-HEP</a>.</p>
+    </section>
+
+    <footer class="foot">
+      © 2026 Nino Ephremidze · Built with plain HTML, hosted on GitHub Pages ·
+      <a href="#about">Back to top</a>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+  const links = [...document.querySelectorAll('.nav a')];
+  const map = new Map(links.map(a => [a.getAttribute('href').slice(1), a]));
+  const spy = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting){
+        links.forEach(a => a.classList.remove('is-active'));
+        map.get(e.target.id)?.classList.add('is-active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  document.querySelectorAll('.section').forEach(s => spy.observe(s));
+
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll('.reveal').forEach((el, i) => {
+    if (reduce){ el.classList.add('in'); return; }
+    setTimeout(() => el.classList.add('in'), 80 + i * 90);
+  });
+</script>
+</body>
+</html>
