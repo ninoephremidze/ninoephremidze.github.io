@@ -595,12 +595,11 @@
   (function(){
     const tw = document.getElementById('tw-text');
     if (!tw) return;
-    const STEM = "How can we study it with ";
+    const STEM = "How can we study it with gravitational";
     const steps = [
       { text: "What is the nature of dark matter?",     keep: 0 },
-      { text: STEM + "gravitational lensing of light?", keep: 0 },
-      { text: STEM + "gravitational-wave lensing?",     keep: STEM.length },
-      { text: "Is this possible?",                      keep: 0 }
+      { text: STEM + " lensing of light?", keep: 0 },
+      { text: STEM + "-wave lensing?",     keep: STEM.length }
     ];
     if (reduce){ tw.textContent = steps[0].text; return; }
     let si = 0, cur = "", mode = "delete";
