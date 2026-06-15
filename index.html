@@ -590,12 +590,12 @@
   // Typewriter hero — types each line, pauses, then deletes before the next.
   // A line can keep part of the previous one: `keep` is how many leading
   // characters stay on screen before the rest is retyped. That's how the third
-  // line keeps "How can we study it with " and just swaps the ending.
+  // line keeps "How can we probe it with " and just swaps the ending.
   // EDIT: change the lines, the STEM, or the keep values below.
   (function(){
     const tw = document.getElementById('tw-text');
     if (!tw) return;
-    const STEM = "How can we study it with gravitational";
+    const STEM = "How can we probe it with gravitational";
     const steps = [
       { text: "What is the nature of dark matter?",     keep: 0 },
       { text: STEM + " lensing of light?", keep: 0 },
