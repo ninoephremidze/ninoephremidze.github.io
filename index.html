@@ -61,6 +61,43 @@
   }
   .skip:focus{ left:0; }
 
+  /* ---------- lensed deep-field banner ---------- */
+  .lensfield{
+    position:relative;
+    height:clamp(15rem, 40vh, 24rem);
+    background:#05060A;
+    overflow:hidden;
+    cursor:crosshair;
+    touch-action:pan-y;
+  }
+  .lensfield canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .lensfield.no-gl{ background:#05060A url(images/deep-field.jpg) center/cover; cursor:default; }
+  .lf-inner{
+    position:absolute; left:0; right:0; bottom:0;
+    max-width:64rem; margin:0 auto;
+    padding:0 clamp(1.5rem,5vw,3rem) 1rem;
+    display:flex; align-items:center; flex-wrap:wrap; gap:.6rem 1rem;
+    pointer-events:none;
+    font-family:var(--mono); font-size:.72rem;
+    color:rgba(252,252,250,.88);
+  }
+  .lf-inner > *{ pointer-events:auto; }
+  .lf-hud{
+    display:flex; align-items:center; gap:.55rem;
+    background:rgba(5,6,10,.6);
+    -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+    border:1px solid rgba(252,252,250,.14);
+    border-radius:3px;
+    padding:.35rem .7rem;
+  }
+  .lf-hud output{ min-width:3.6em; color:#F3C9CF; font-variant-numeric:tabular-nums; }
+  .lf-hud input{ width:7rem; accent-color:#E7AEB7; margin:0; }
+  .lf-hint{ margin:0; color:rgba(252,252,250,.55); }
+  .lf-credit{ margin-left:auto; color:rgba(252,252,250,.5); text-decoration:none; font-size:.66rem; }
+  .lf-credit:hover{ color:#F3C9CF; }
+  .no-gl .lf-hud, .no-gl .lf-hint{ display:none; }
+  @media (max-width:760px){ .lf-hint{ display:none; } }
+
   /* ---------- layout ---------- */
   .layout{
     max-width:64rem;
@@ -407,6 +444,21 @@
 </head>
 <body>
 <a class="skip" href="#about">Skip to content</a>
+
+<!-- Interactive JWST deep field: the cursor is a point-mass lens.
+     EDIT: change the default Einstein radius with the slider's value="…" (arcsec). -->
+<header class="lensfield" id="lensfield" aria-label="Interactive JWST deep field — move the cursor to gravitationally lens the galaxies">
+  <canvas aria-hidden="true"></canvas>
+  <div class="lf-inner">
+    <div class="lf-hud">
+      <label for="lf-theta">θ<sub>E</sub> =</label>
+      <output id="lf-out" for="lf-theta">10.0″</output>
+      <input id="lf-theta" type="range" min="1" max="30" step="0.5" value="10" aria-label="Einstein radius in arcseconds">
+    </div>
+    <p class="lf-hint">Point-mass lens · follows your cursor</p>
+    <a class="lf-credit" href="https://esawebb.org/images/weic2406d/">JWST/NIRCam · GOODS-North · NASA, ESA, CSA, JADES</a>
+  </div>
+</header>
 
 <div class="layout">
 
@@ -834,6 +886,8 @@
 
     <footer class="foot">
       © 2026 Nino Ephremidze · Built with plain HTML, hosted on GitHub Pages ·
+      Banner image: <a href="https://esawebb.org/images/weic2406d/">NASA, ESA, CSA, B. Robertson (UC Santa Cruz),
+      B. Johnson (CfA), S. Tacchella (Cambridge), M. Rieke (Univ. of Arizona), D. Eisenstein (CfA)</a>, CC BY 4.0 ·
       <a href="#about">Back to top</a>
     </footer>
 
@@ -858,6 +912,139 @@
     if (reduce){ el.classList.add('in'); return; }
     setTimeout(() => el.classList.add('in'), 80 + i * 90);
   });
+
+  // Lensed deep field — exact point-mass lens equation evaluated per pixel on
+  // the GPU: beta = theta - thetaE^2 (theta - thetaL) / |theta - thetaL|^2.
+  // Surface brightness is conserved, so each pixel just samples the unlensed
+  // image at beta. The source plane is mirror-tiled so far-away rays land on
+  // more galaxies instead of black.
+  (function(){
+    const box = document.getElementById('lensfield');
+    if (!box) return;
+    const canvas = box.querySelector('canvas');
+    const slider = document.getElementById('lf-theta');
+    const out = document.getElementById('lf-out');
+    const gl = canvas.getContext('webgl2', { antialias:false }) || canvas.getContext('webgl', { antialias:false });
+    if (!gl){ box.classList.add('no-gl'); return; }
+
+    // GOODS-N (ESA/Webb weic2406d): 8.11' across, resized to 2800 px wide.
+    const IMG_W = 2800, IMG_H = 1356, ARCSEC_PER_IMG_PX = 8.11 * 60 / IMG_W;
+    const MIN_ZOOM = 0.75;  // CSS px per image px: big enough that arcs read clearly
+
+    const vs = 'attribute vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }';
+    const fs = `precision highp float;
+      uniform sampler2D u_tex;
+      uniform vec2 u_res, u_lens, u_off, u_img;
+      uniform float u_te, u_dpr;
+      void main(){
+        vec2 p = vec2(gl_FragCoord.x, u_res.y - gl_FragCoord.y);
+        vec2 d = p - u_lens;
+        float r2 = max(dot(d, d), 1e-4), r = sqrt(r2);
+        vec2 b = p - u_te * u_te * d / r2;
+        vec2 uv = 1.0 - abs(1.0 - mod((b - u_off) / u_img, 2.0));
+        vec3 col = texture2D(u_tex, uv).rgb;
+        col *= smoothstep(0.06, 0.18, r / u_te);              // hide the noisy core
+        float ring = 1.0 - smoothstep(0.0, 1.1 * u_dpr, abs(r - u_te));
+        col = mix(col, vec3(1.0, 0.82, 0.86), ring * 0.2);     // faint Einstein ring marker
+        gl_FragColor = vec4(col, 1.0);
+      }`;
+    function sh(type, src){ const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; }
+    const prog = gl.createProgram();
+    gl.attachShader(prog, sh(gl.VERTEX_SHADER, vs));
+    gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)){ box.classList.add('no-gl'); return; }
+    gl.useProgram(prog);
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, 'p');
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    const U = n => gl.getUniformLocation(prog, n);
+    const u = { res:U('u_res'), lens:U('u_lens'), off:U('u_off'), img:U('u_img'), te:U('u_te'), dpr:U('u_dpr') };
+
+    let ready = false, raf = 0, visible = true;
+    const img = new Image();
+    img.onload = () => {
+      gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
+      const isGL2 = typeof WebGL2RenderingContext !== 'undefined' && gl instanceof WebGL2RenderingContext;
+      if (isGL2) gl.generateMipmap(gl.TEXTURE_2D);   // NPOT mipmaps need WebGL2
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, isGL2 ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      ready = true; wake();
+    };
+    img.onerror = () => box.classList.add('no-gl');
+    img.src = 'images/deep-field.jpg';
+
+    // geometry (CSS px), recomputed on resize
+    let W = 0, H = 0, dpr = 1, zoom = 1;
+    function resize(){
+      const r = box.getBoundingClientRect();
+      W = r.width; H = r.height; dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      zoom = Math.max(W / IMG_W, H / IMG_H, MIN_ZOOM);
+      wake();
+    }
+    new ResizeObserver(resize).observe(box);
+
+    let thetaE = parseFloat(slider.value);   // arcsec
+    function setTheta(){
+      thetaE = parseFloat(slider.value);
+      out.textContent = thetaE.toFixed(1) + '″';
+      wake();
+    }
+    slider.addEventListener('input', setTheta); setTheta();
+
+    // lens position: follows the pointer, otherwise wanders slowly
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let pointer = null, lx = null, ly = null, t0 = performance.now(), last = t0;
+    box.addEventListener('pointermove', e => {
+      if (e.target.closest('.lf-inner > *')) return;    // don't chase the slider
+      const r = box.getBoundingClientRect();
+      pointer = { x: e.clientX - r.left, y: e.clientY - r.top }; wake();
+    });
+    box.addEventListener('pointerdown', e => {
+      if (e.pointerType === 'mouse' || e.target.closest('.lf-inner > *')) return;
+      const r = box.getBoundingClientRect();
+      pointer = { x: e.clientX - r.left, y: e.clientY - r.top }; wake();
+    });
+    box.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') pointer = null; wake(); });
+
+    function target(t){
+      if (pointer) return pointer;
+      if (reduce) return { x: W * 0.62, y: H * 0.45 };
+      const s = (t - t0) / 1000;
+      return { x: W * (0.5 + 0.33 * Math.sin(s * 0.11)), y: H * (0.5 + 0.28 * Math.sin(s * 0.17 + 1)) };
+    }
+
+    new IntersectionObserver(es => { visible = es[0].isIntersecting; wake(); }).observe(box);
+    function wake(){ if (!raf && ready && visible) raf = requestAnimationFrame(frame); }
+    function frame(now){
+      raf = 0;
+      const dt = Math.min((now - last) / 1000, 0.1); last = now;
+      const g = target(now);
+      if (lx === null){ lx = g.x; ly = g.y; }
+      const k = 1 - Math.exp(-dt * 7);
+      lx += (g.x - lx) * k; ly += (g.y - ly) * k;
+
+      const iw = IMG_W * zoom, ih = IMG_H * zoom;              // displayed image size, CSS px
+      const tePx = thetaE / (ARCSEC_PER_IMG_PX / zoom);         // Einstein radius, CSS px
+      gl.uniform2f(u.res, canvas.width, canvas.height);
+      gl.uniform2f(u.lens, lx * dpr, ly * dpr);
+      gl.uniform2f(u.off, (W - iw) / 2 * dpr, (H - ih) / 2 * dpr);
+      gl.uniform2f(u.img, iw * dpr, ih * dpr);
+      gl.uniform1f(u.te, tePx * dpr);
+      gl.uniform1f(u.dpr, dpr);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+      const settled = Math.hypot(g.x - lx, g.y - ly) < 0.05;
+      if (!(settled && (pointer || reduce))) wake();           // keep animating while moving
+    }
+  })();
 
   // Projects — the hovered (or focused) panel widens and stays open until
   // another one is hovered; clicking opens the detail dialog.
