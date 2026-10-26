@@ -281,6 +281,90 @@
     white-space:nowrap; text-align:right;
   }
 
+  /* ---------- projects (hover accordion + detail dialog) ---------- */
+  .projects{
+    display:flex; gap:.4rem;
+    height:24rem;
+    margin-top:.4rem;
+  }
+  .proj{
+    position:relative;
+    flex:1 1 0;
+    min-width:0;
+    padding:0; border:0; margin:0;
+    border-radius:4px;
+    overflow:hidden;
+    cursor:pointer;
+    background:#1E1B1D;
+    color:#FCFCFA;
+    font:inherit; text-align:left;
+    transition:flex-grow .5s cubic-bezier(.3,.7,.2,1);
+  }
+  .proj.is-open{ flex-grow:6; }
+  .proj img{
+    position:absolute; inset:0;
+    width:100%; height:100%; object-fit:cover;
+    transition:transform .6s ease, filter .4s ease;
+    filter:saturate(.7) brightness(.75);
+  }
+  .proj.is-open img{ filter:none; transform:scale(1.03); }
+  .proj::after{                     /* scrim so the caption stays legible */
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(to top, rgba(20,16,18,.92) 0%, rgba(20,16,18,.35) 45%, rgba(20,16,18,0) 70%);
+  }
+  .proj-label{                      /* vertical title shown while collapsed */
+    position:absolute; left:50%; bottom:1rem; z-index:1;
+    transform:translateX(-50%) rotate(180deg);
+    writing-mode:vertical-rl;
+    font-family:var(--mono); font-size:.7rem; letter-spacing:.12em; text-transform:uppercase;
+    white-space:nowrap;
+    transition:opacity .25s ease;
+  }
+  .proj.is-open .proj-label{ opacity:0; }
+  .proj-cap{
+    position:absolute; left:0; right:0; bottom:0; z-index:1;
+    padding:1.1rem 1.2rem;
+    width:max(19rem, 100%);         /* keeps text from reflowing while the panel widens */
+    opacity:0; transform:translateY(8px);
+    transition:opacity .2s ease, transform .2s ease;
+  }
+  .proj.is-open .proj-cap{ opacity:1; transform:none; transition-delay:.18s; }
+  .proj-cap .p-year{ font-family:var(--mono); font-size:.68rem; color:#E7AEB7; letter-spacing:.08em; }
+  .proj-cap .p-title{ display:block; font-size:1.15rem; font-weight:500; line-height:1.25; margin:.2rem 0 .35rem; }
+  .proj-cap .p-teaser{ display:block; font-size:.92rem; line-height:1.45; color:rgba(252,252,250,.82); }
+  .proj-cap .p-more{ display:inline-block; margin-top:.6rem; font-family:var(--mono); font-size:.7rem; color:#E7AEB7; }
+
+  .proj-dialog{
+    width:min(40rem, calc(100vw - 2rem));
+    max-height:calc(100vh - 2rem);
+    padding:0; border:1px solid var(--line); border-radius:6px;
+    background:var(--paper); color:var(--ink);
+    box-shadow:0 20px 60px rgba(0,0,0,.25);
+  }
+  .proj-dialog::backdrop{ background:rgba(27,27,25,.55); }
+  .proj-dialog[open]{ animation:dlg-in .25s ease; }
+  @keyframes dlg-in{ from{ opacity:0; transform:translateY(12px); } }
+  .proj-dialog .d-img{ display:block; width:100%; aspect-ratio:16/8; object-fit:cover; background:#1E1B1D; }
+  .proj-dialog .d-body{ padding:1.5rem 1.7rem 1.8rem; }
+  .proj-dialog .d-year{ font-family:var(--mono); font-size:.7rem; letter-spacing:.12em; color:var(--accent); text-transform:uppercase; margin:0 0 .4rem; }
+  .proj-dialog h3{ font-size:1.4rem; font-weight:500; line-height:1.25; margin:0 0 .9rem; }
+  .proj-dialog p{ margin:0 0 .9rem; }
+  .proj-dialog .pub-links{ display:flex; flex-wrap:wrap; gap:.9rem; margin-top:1.1rem; }
+  .proj-dialog .pub-links a{ font-family:var(--mono); font-size:.74rem; text-decoration:none; color:var(--accent); border-bottom:1px solid transparent; }
+  .proj-dialog .pub-links a:hover{ border-color:var(--accent); }
+  .d-close{
+    position:absolute; top:.7rem; right:.7rem;
+    width:2.1rem; height:2.1rem; border-radius:50%;
+    border:0; background:rgba(20,16,18,.6); color:#FCFCFA;
+    font-size:1.2rem; line-height:1; cursor:pointer;
+  }
+  .d-close:hover{ background:var(--accent); }
+
+  @media (prefers-reduced-motion: reduce){
+    .proj, .proj img, .proj-cap{ transition:none; }
+    .proj-dialog[open]{ animation:none; }
+  }
+
   /* ---------- footer ---------- */
   .foot{
     border-top:1px solid var(--line);
@@ -311,6 +395,13 @@
     .pub .year{ padding-top:0; }
     .entry{ grid-template-columns:1fr; gap:.35rem; }
     .e-date{ text-align:left; }
+    /* phones: stack panels as banners, tap opens the detail */
+    .projects{ flex-direction:column; height:auto; }
+    .proj{ flex:none; height:8.5rem; }
+    .proj img{ filter:none; }
+    .proj-label{ display:none; }
+    .proj-cap{ opacity:1; transform:none; width:100%; padding:.9rem 1rem; }
+    .proj-cap .p-teaser{ display:none; }
   }
 </style>
 </head>
@@ -337,6 +428,7 @@
     <nav class="nav" aria-label="Sections">
       <a href="#about">About</a>
       <a href="#research">Research</a>
+      <a href="#projects">Projects</a>
       <a href="#education">Education</a>
       <a href="#publications">Publications</a>
       <a href="#talks">Presentations</a>
@@ -369,6 +461,164 @@
         <li>Gravitational lensing</li>
         <li>Cosmology</li>
       </ul>
+    </section>
+
+    <section class="section reveal" id="projects">
+      <p class="eyebrow">Projects</p>
+      <h2>What I’m working on</h2>
+      <!-- EDIT: each project is one <button class="proj"> block.
+           - The image: swap src for your own figure (e.g. images/projects/my-figure.png).
+           - The caption (year / title / teaser) shows when the panel expands.
+           - The <template class="proj-detail"> holds the text shown when it's clicked.
+           I drafted these from your paper titles — please check the physics wording. -->
+      <div class="projects">
+
+        <button class="proj is-open" type="button">
+          <img src="images/projects/wave-dark-matter.svg" alt="Granular wave dark matter halo lensing background galaxies into arcs">
+          <span class="proj-label">Wave dark matter</span>
+          <span class="proj-cap">
+            <span class="p-year">2026 · JWST</span>
+            <span class="p-title">Wave-like dark matter in JWST cluster lenses</span>
+            <span class="p-teaser">Searching for the granular density fluctuations of ultralight dark matter in multiply-imaged galaxies.</span>
+            <span class="p-more">Read more →</span>
+          </span>
+          <template class="proj-detail">
+            <p>If dark matter is an ultralight boson, galactic halos are not smooth: wave
+              interference fills them with order-unity density fluctuations, or “granules”,
+              on the scale of the particle’s de Broglie wavelength.</p>
+            <p>These fluctuations perturb the lensing potential of galaxy clusters and leave
+              statistical imprints on the multiple images of strongly lensed background
+              galaxies. In this project we model those imprints and confront them with
+              strong cluster lenses observed by JWST.</p>
+            <p>With D. Gilman and C. Dvorkin.</p>
+            <div class="pub-links"><a href="https://arxiv.org/abs/2605.30649">arXiv</a></div>
+          </template>
+        </button>
+
+        <button class="proj" type="button">
+          <img src="images/projects/gw-lensing.svg" alt="Gravitational wavefronts bending around a point mass, with a chirp waveform below">
+          <span class="proj-label">GW lensing</span>
+          <span class="proj-cap">
+            <span class="p-year">2026 · Phys. Rev. D</span>
+            <span class="p-title">FIONA: fast wave-optics lensing of gravitational waves</span>
+            <span class="p-teaser">Evaluating the Fresnel diffraction integral with fast Fourier transforms.</span>
+            <span class="p-more">Read more →</span>
+          </span>
+          <template class="proj-detail">
+            <p>When a gravitational wave’s wavelength is comparable to the size of the lens,
+              geometric optics breaks down and the lensing amplification is given by a
+              highly oscillatory Fresnel integral that is expensive to compute.</p>
+            <p>FIONA evaluates this integral with fast Fourier transforms, making
+              wave-optics predictions fast enough to use for general lens models — a step
+              toward using lensed gravitational waves to probe dark matter on small scales.</p>
+            <p>With M. Kamionkowski and C. Dvorkin. Presented at the LISA Symposium and
+              New Frontiers in Cosmology 2026.</p>
+            <div class="pub-links">
+              <a href="https://journals.aps.org/prd/abstract/10.1103/lqvv-fr8y">Journal</a>
+              <a href="https://arxiv.org/abs/2603.12333">arXiv</a>
+            </div>
+          </template>
+        </button>
+
+        <button class="proj" type="button">
+          <img src="images/projects/caustic-stars.svg" alt="A cluster caustic broken into micro-caustics, with a magnified star and its light curve">
+          <span class="proj-label">Caustic-crossing stars</span>
+          <span class="proj-cap">
+            <span class="p-year">2026 · Ongoing</span>
+            <span class="p-title">Caustic-crossing stars as probes of primordial black holes</span>
+            <span class="p-teaser">Using individual stars magnified thousands of times to look for compact dark matter.</span>
+            <span class="p-more">Read more →</span>
+          </span>
+          <template class="proj-detail">
+            <p>Near the critical curves of galaxy clusters, individual background stars can be
+              magnified by factors of thousands. Compact objects in the lens — such as
+              primordial black holes — break the smooth caustic into a network of
+              micro-caustics, changing how often these events happen and what their light
+              curves look like.</p>
+            <p>This project asks how well observations of extremely magnified stars can
+              constrain primordial black holes as a component of dark matter.</p>
+            <p>Presented at the Strong Lensing Mission Concept Workshop, Caltech, 2026.</p>
+          </template>
+        </button>
+
+        <button class="proj" type="button">
+          <img src="images/projects/abell-s1063.svg" alt="Cluster galaxies surrounded by lensed arcs, one with a small perturbation">
+          <span class="proj-label">Abell S1063</span>
+          <span class="proj-cap">
+            <span class="p-year">2025 · MNRAS</span>
+            <span class="p-title">Dark matter substructure or source systematics?</span>
+            <span class="p-teaser">A case study of the JWST cluster lens Abell S1063.</span>
+            <span class="p-more">Read more →</span>
+          </span>
+          <template class="proj-detail">
+            <p>Small dark matter subhalos leave subtle distortions in strongly lensed arcs. But
+              an overly simple model of the background galaxy’s light can produce residuals
+              that mimic exactly that signal.</p>
+            <p>Using the cluster Abell S1063 as a case study, we examine how dark matter
+              substructure and source-modelling systematics can be disentangled. This work
+              grew out of my senior thesis, which received a Hoopes Prize.</p>
+            <p>With C. Chandrashekar, Ç. Şengül and C. Dvorkin.</p>
+            <div class="pub-links">
+              <a href="https://academic.oup.com/mnras/article/542/3/2610/8240274">Journal</a>
+              <a href="https://arxiv.org/abs/2502.18571">arXiv</a>
+            </div>
+          </template>
+        </button>
+
+        <button class="proj" type="button">
+          <img src="images/projects/primordial-features.svg" alt="A primordial power spectrum with a localized oscillatory feature">
+          <span class="proj-label">Primordial features</span>
+          <span class="proj-cap">
+            <span class="p-year">2026 · JCAP</span>
+            <span class="p-title">Primordial features as probes of baryogenesis</span>
+            <span class="p-teaser">Oscillatory signatures from supersymmetric flat directions during inflation.</span>
+            <span class="p-more">Read more →</span>
+          </span>
+          <template class="proj-detail">
+            <p>In supersymmetric theories, scalar fields along “flat directions” can generate
+              the matter–antimatter asymmetry of the universe. The dynamics of these fields
+              during inflation can imprint features on the primordial fluctuations.</p>
+            <p>This project studies those features as an observational window onto
+              baryogenesis.</p>
+            <p>With Y. Wu, X. Chen and L. Li.</p>
+            <div class="pub-links"><a href="https://arxiv.org/abs/2602.08781">arXiv</a></div>
+          </template>
+        </button>
+
+        <button class="proj" type="button">
+          <img src="images/projects/brown-dwarfs.svg" alt="A brown dwarf transiting a bright star, with the transit light curve below">
+          <span class="proj-label">Brown dwarfs</span>
+          <span class="proj-cap">
+            <span class="p-year">2022–2026 · TESS</span>
+            <span class="p-title">Transiting brown dwarfs from TESS</span>
+            <span class="p-teaser">Characterizing objects on the boundary between planets and stars.</span>
+            <span class="p-more">Read more →</span>
+          </span>
+          <template class="proj-detail">
+            <p>Brown dwarfs sit between the most massive planets and the least massive stars.
+              Working with D. Latham at the Center for Astrophysics, I characterized brown
+              dwarfs discovered by the TESS mission using ground-based follow-up
+              observations.</p>
+            <p>TOI-3662b is a borderline brown dwarf orbiting a subgiant star; HIP 61637 b is a
+              brown dwarf in a near-circular orbit around a massive A-type star.</p>
+            <div class="pub-links">
+              <a href="https://arxiv.org/abs/2608.03094">HIP 61637 b (arXiv)</a>
+              <a href="https://ui.adsabs.harvard.edu/abs/2022AAS...24033102E">TOI-3662b (ADS)</a>
+            </div>
+          </template>
+        </button>
+
+      </div>
+
+      <dialog class="proj-dialog" id="proj-dialog" aria-labelledby="d-title">
+        <button class="d-close" type="button" aria-label="Close">×</button>
+        <img class="d-img" src="" alt="">
+        <div class="d-body">
+          <p class="d-year"></p>
+          <h3 id="d-title"></h3>
+          <div class="d-text"></div>
+        </div>
+      </dialog>
     </section>
 
     <section class="section reveal" id="education">
@@ -608,6 +858,31 @@
     if (reduce){ el.classList.add('in'); return; }
     setTimeout(() => el.classList.add('in'), 80 + i * 90);
   });
+
+  // Projects — the hovered (or focused) panel widens and stays open until
+  // another one is hovered; clicking opens the detail dialog.
+  (function(){
+    const panels = [...document.querySelectorAll('.proj')];
+    const dlg = document.getElementById('proj-dialog');
+    if (!panels.length || !dlg) return;
+    const open = p => panels.forEach(q => q.classList.toggle('is-open', q === p));
+    panels.forEach(p => {
+      p.addEventListener('mouseenter', () => open(p));
+      p.addEventListener('focus', () => open(p));
+      p.addEventListener('click', () => {
+        const img = p.querySelector('img');
+        dlg.querySelector('.d-img').src = img.src;
+        dlg.querySelector('.d-img').alt = img.alt;
+        dlg.querySelector('.d-year').textContent = p.querySelector('.p-year').textContent;
+        dlg.querySelector('h3').textContent = p.querySelector('.p-title').textContent;
+        dlg.querySelector('.d-text').replaceChildren(p.querySelector('.proj-detail').content.cloneNode(true));
+        dlg.showModal();
+        dlg.scrollTop = 0;
+      });
+    });
+    dlg.querySelector('.d-close').addEventListener('click', () => dlg.close());
+    dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });  // backdrop
+  })();
 
   // Typewriter hero — types each line, pauses, then deletes before the next.
   // A line can keep part of the previous one: `keep` is how many leading
