@@ -28,32 +28,32 @@
   <h2>Lensing of light by a galaxy cluster</h2>
   <div class="gallery">
     <figure>
-      <img src="gifs/cluster_raytracing.gif" alt="Light from a background galaxy is bent by a galaxy cluster into three images" loading="lazy">
-      <figcaption>A JWST galaxy behind a cluster: three light paths, three images. <a href="gifs/cluster_raytracing.gif" download>GIF</a></figcaption>
+      <video autoplay muted loop playsinline preload="metadata" aria-label="Light from a background galaxy is bent by a galaxy cluster into three images"><source src="video/cluster_raytracing.mp4" type="video/mp4"><source src="video/cluster_raytracing.webm" type="video/webm"></video>
+      <figcaption>A JWST galaxy behind a cluster: three light paths, three images. <a href="video/cluster_raytracing.mp4" download>MP4</a> <a href="gifs/cluster_raytracing.gif" download>GIF</a></figcaption>
     </figure>
     <figure>
-      <img src="gifs/cluster_subhalo_move.gif" alt="A dark matter subhalo moving across a lensed arc, with the change it imprints on the image" loading="lazy">
-      <figcaption>A dark matter subhalo leaves a local imprint on the arc. <a href="gifs/cluster_subhalo_move.gif" download>GIF</a></figcaption>
+      <video autoplay muted loop playsinline preload="metadata" aria-label="A dark matter subhalo moving across a lensed arc, with the change it imprints on the image"><source src="video/cluster_subhalo_move.mp4" type="video/mp4"><source src="video/cluster_subhalo_move.webm" type="video/webm"></video>
+      <figcaption>A dark matter subhalo leaves a local imprint on the arc. <a href="video/cluster_subhalo_move.mp4" download>MP4</a> <a href="gifs/cluster_subhalo_move.gif" download>GIF</a></figcaption>
     </figure>
     <figure>
-      <img src="gifs/cluster_subhalo_profile.gif" alt="The same subhalo with its density profile changing from diffuse to cored to point-like" loading="lazy">
-      <figcaption>The imprint depends on how the subhalo's mass is distributed. <a href="gifs/cluster_subhalo_profile.gif" download>GIF</a></figcaption>
+      <video autoplay muted loop playsinline preload="metadata" aria-label="The same subhalo with its density profile changing from diffuse to cored to point-like"><source src="video/cluster_subhalo_profile.mp4" type="video/mp4"><source src="video/cluster_subhalo_profile.webm" type="video/webm"></video>
+      <figcaption>The imprint depends on how the subhalo's mass is distributed. <a href="video/cluster_subhalo_profile.mp4" download>MP4</a> <a href="gifs/cluster_subhalo_profile.gif" download>GIF</a></figcaption>
     </figure>
     <figure>
-      <img src="gifs/cluster_wave_dm.gif" alt="Granular wave-like dark matter perturbing a lensed arc, with the residual power spectrum" loading="lazy">
-      <figcaption>Wave-like dark matter perturbs the arc everywhere; its power spectrum is the signal. <a href="gifs/cluster_wave_dm.gif" download>GIF</a></figcaption>
+      <video autoplay muted loop playsinline preload="metadata" aria-label="Granular wave-like dark matter perturbing a lensed arc, with the residual power spectrum"><source src="video/cluster_wave_dm.mp4" type="video/mp4"><source src="video/cluster_wave_dm.webm" type="video/webm"></video>
+      <figcaption>Wave-like dark matter perturbs the arc everywhere; its power spectrum is the signal. <a href="video/cluster_wave_dm.mp4" download>MP4</a> <a href="gifs/cluster_wave_dm.gif" download>GIF</a></figcaption>
     </figure>
   </div>
 
   <h2>Lensing of gravitational waves</h2>
   <div class="gallery">
     <figure>
-      <img src="gifs/gw_lensing_intro.gif" alt="Gravitational waves from merging black holes diffracting around a dark matter subhalo, with the lensed waveform" loading="lazy">
-      <figcaption>Waves from merging black holes diffract around a subhalo. <a href="gifs/gw_lensing_intro.gif" download>GIF</a></figcaption>
+      <video autoplay muted loop playsinline preload="metadata" aria-label="Gravitational waves from merging black holes diffracting around a dark matter subhalo, with the lensed waveform"><source src="video/gw_lensing_intro.mp4" type="video/mp4"><source src="video/gw_lensing_intro.webm" type="video/webm"></video>
+      <figcaption>Waves from merging black holes diffract around a subhalo. <a href="video/gw_lensing_intro.mp4" download>MP4</a> <a href="gifs/gw_lensing_intro.gif" download>GIF</a></figcaption>
     </figure>
     <figure>
-      <img src="gifs/gw_lensing_scan.gif" alt="As the lens mass grows the signal goes from unchanged, to beating, to two copies" loading="lazy">
-      <figcaption>From wave optics to geometric optics as the lens grows. <a href="gifs/gw_lensing_scan.gif" download>GIF</a></figcaption>
+      <video autoplay muted loop playsinline preload="metadata" aria-label="As the lens mass grows the signal goes from unchanged, to beating, to two copies"><source src="video/gw_lensing_scan.mp4" type="video/mp4"><source src="video/gw_lensing_scan.webm" type="video/webm"></video>
+      <figcaption>From wave optics to geometric optics as the lens grows. <a href="video/gw_lensing_scan.mp4" download>MP4</a> <a href="gifs/gw_lensing_scan.gif" download>GIF</a></figcaption>
     </figure>
   </div>
 
@@ -66,26 +66,28 @@
 </main>
 <dialog class="lightbox" id="lightbox" aria-label="Enlarged animation">
   <button class="lb-close" type="button" aria-label="Close">&times;</button>
-  <img alt="">
+  <video muted loop playsinline></video>
   <p class="lb-cap"></p>
 </dialog>
 <script>
-// Click a GIF to view it almost full screen; click anywhere or press Esc to close.
+// Click an animation to view it almost full screen; click anywhere or press Esc to close.
 (() => {
-  const dlg = document.getElementById('lightbox'), big = dlg.querySelector('img'), cap = dlg.querySelector('.lb-cap');
-  document.querySelectorAll('.gallery img').forEach(img => {
-    img.tabIndex = 0;
-    img.setAttribute('role', 'button');
+  const dlg = document.getElementById('lightbox'), big = dlg.querySelector('video'), cap = dlg.querySelector('.lb-cap');
+  document.querySelectorAll('.gallery video').forEach(v => {
+    v.tabIndex = 0;
+    v.setAttribute('role', 'button');
     const open = () => {
-      big.src = img.src; big.alt = img.alt;
-      cap.textContent = img.closest('figure').querySelector('figcaption').firstChild.textContent.trim();
+      big.src = v.currentSrc || v.src; big.setAttribute('aria-label', v.getAttribute('aria-label'));
+      big.currentTime = v.currentTime;
+      cap.textContent = v.closest('figure').querySelector('figcaption').firstChild.textContent.trim();
       dlg.showModal();
+      big.play().catch(() => {});
     };
-    img.addEventListener('click', open);
-    img.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+    v.addEventListener('click', open);
+    v.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
   });
   dlg.addEventListener('click', () => dlg.close());
-  dlg.addEventListener('close', () => { big.removeAttribute('src'); });
+  dlg.addEventListener('close', () => { big.pause(); big.removeAttribute('src'); big.load(); });
 })();
 </script>
 </body>

@@ -24,8 +24,8 @@ from lensviz.style import GifWriter, ease, fmt_mass, PAPER, INK, MUTED, FAINT, L
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, '..', 'gifs')
-DPI = 75
-FIGSIZE = (12.8, 7.2)
+DPI = 150
+FIGSIZE = (12.8, 7.2)          # 1920 x 1080 px (the GIF is downsampled to 960 x 540)
 
 SRC = (0.6, 0.0)
 LENS_X = 5.0
@@ -52,7 +52,8 @@ def einstein_2d(s):
 def field_for(M_lz, y):
     s = strength_2d(M_lz)
     lens_y = -y * einstein_2d(s)
-    xs, ys, U = G.huygens_field(source=SRC, lens=(LENS_X, lens_y), wavelength=WAVELENGTH, strength=s)
+    xs, ys, U = G.huygens_field(source=SRC, lens=(LENS_X, lens_y), wavelength=WAVELENGTH, strength=s,
+                                  nx=540, ny=270)
     X = xs[None, :]
     U = U * np.sqrt(np.hypot(X - SRC[0], ys[:, None] - SRC[1]) + 0.3)   # undo 1/sqrt(r) spreading for display
     return xs, ys, U, lens_y, s
@@ -63,9 +64,8 @@ def draw_scene(ax, xs, ys, U, lens_y, s, phase, t_anim, front=None):
     if front is not None:   # wave has only travelled `front` from the source so far
         R = np.hypot(xs[None, :] - SRC[0], ys[:, None] - SRC[1])
         vals = vals * np.clip((front - R) / 0.6, 0, 1)
-    vals = np.round(np.clip(vals, -2.2, 2.2) * 3) / 3      # a few discrete levels keep the GIF small
     ax.imshow(vals, origin='lower', extent=[xs[0], xs[-1], ys[0], ys[-1]], cmap=FIELD_CMAP,
-              vmin=-2.2, vmax=2.2, interpolation='nearest', aspect='auto')
+              vmin=-2.2, vmax=2.2, interpolation='bilinear', aspect='auto')
     # the binary: two black holes orbiting faster and faster
     om = 2 * np.pi * (0.6 + 2.5 * t_anim ** 3)
     a = 0.16 * (1 - 0.6 * t_anim)

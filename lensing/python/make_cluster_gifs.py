@@ -26,8 +26,8 @@ from lensviz.style import (DIVERGING, fmt_mass, GifWriter, ease, PAPER, INK, MUT
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, '..', 'gifs')
-DPI = 75
-FIGSIZE = (12.8, 7.2)          # 960 x 540 px
+DPI = 150
+FIGSIZE = (12.8, 7.2)          # 1920 x 1080 px (the GIF is downsampled to 960 x 540)
 
 # ------------------------------------------------------------------ the lens system
 CLUSTER = C.Cluster(b=18.0, q=0.5, s=5.0)
@@ -35,7 +35,7 @@ SRC_POS = (2.8, 0.7)           # source position [arcsec]
 SRC_SIZE = 0.75                # source width [arcsec]  (~6 kpc at z = 1)
 HALF_FULL = 16.0               # half width of the full image-plane view [arcsec]
 HALF_ZOOM = 1.6                # half width of the zoom on one arc [arcsec]
-N_FULL, N_ZOOM = 560, 300
+N_FULL, N_ZOOM = 640, 420
 R_T = 0.3                      # tidal truncation radius of the subhalo [arcsec] (~1.6 kpc)
 
 

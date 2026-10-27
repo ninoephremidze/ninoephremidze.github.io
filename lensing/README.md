@@ -12,7 +12,8 @@ lensing/
   js/cluster.js         cluster lensing physics + UI
   js/gw.js              GW lensing physics + UI
   assets/               data the pages load (built by python/build_web_assets.py)
-  gifs/                 animations (built by python/make_*_gifs.py)
+  video/                animations shown on the page, 1920x1080 MP4 (built by python/make_*_gifs.py)
+  gifs/                 the same animations as 960x540 GIFs, for downloading
   python/
     lensviz/cluster.py  lens models, ray tracing, wave-DM granule fields
     lensviz/gw.py       point-mass F(w, y), toy BBH waveform, 2D Huygens wave field
@@ -29,9 +30,12 @@ lensing/
 cd lensing/python
 pip install -r requirements.txt
 python build_web_assets.py            # galaxy.png, cluster curves; F table on first run (~3 min)
-python make_cluster_gifs.py           # 4 GIFs, ~3 min
-python make_gw_gifs.py                # 2 GIFs, ~6 min (needs the F table)
+python make_cluster_gifs.py           # 4 animations (MP4 + GIF)
+python make_gw_gifs.py                # 2 animations (MP4 + GIF; needs the F table)
 ```
+
+MP4s need ffmpeg, which `imageio-ffmpeg` (in requirements.txt) provides; without it only the GIFs
+are written.
 
 Options:
 

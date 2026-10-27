@@ -40,21 +40,82 @@ def fig_to_array(fig):
     return a
 
 
-class GifWriter:
-    """Collect frames, then write a palette-optimised looping GIF."""
+def _ffmpeg():
+    import shutil
+    try:
+        import imageio_ffmpeg
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except ImportError:
+        return shutil.which('ffmpeg')
 
-    def __init__(self, path, fps=12):
-        self.path, self.fps, self.frames = path, fps, []
+
+def to_webm(mp4):
+    """VP9 copy of an MP4, the page's fallback for browsers without H.264 (e.g. some Linux Chromium builds)."""
+    import subprocess
+    out = os.path.splitext(mp4)[0] + '.webm'
+    subprocess.run([_ffmpeg(), '-y', '-loglevel', 'error', '-i', mp4, '-c:v', 'libvpx-vp9', '-crf', '30', '-b:v', '0',
+                    '-row-mt', '1', '-pix_fmt', 'yuv420p', '-an', out], check=True)
+    return out
+
+
+class GifWriter:
+    """Collect frames, then write a looping MP4 at full resolution and a smaller GIF.
+
+    The page shows the MP4 (sharp, small); the GIF is for downloading. Frames are
+    streamed to ffmpeg as they arrive, so only the downsampled GIF frames stay in memory.
+    The MP4 goes to ../video/<name>.mp4 next to the GIF folder; it is skipped if
+    ffmpeg is not available (pip install imageio-ffmpeg).
+    """
+
+    def __init__(self, path, fps=12, gif_width=960):
+        self.path, self.fps, self.gif_width, self.frames = path, fps, gif_width, []
+        gif_dir = os.path.dirname(os.path.abspath(path))
+        name = os.path.splitext(os.path.basename(path))[0]
+        self.video_path = os.path.join(os.path.dirname(gif_dir), 'video', name + '.mp4')
+        self._proc, self._last = None, None
+
+    def _write_video(self, a):
+        if self._proc is None:
+            exe = _ffmpeg()
+            if exe is None:
+                self._proc = False
+                print('ffmpeg not found: skipping MP4 (pip install imageio-ffmpeg)')
+                return
+            import subprocess
+            os.makedirs(os.path.dirname(self.video_path), exist_ok=True)
+            h, w = a.shape[:2]
+            self._proc = subprocess.Popen(
+                [exe, '-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{w}x{h}',
+                 '-r', str(self.fps), '-i', '-', '-c:v', 'libx264', '-preset', 'slow', '-crf', '18',
+                 '-tune', 'animation', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', self.video_path],
+                stdin=subprocess.PIPE)
+        if self._proc:
+            self._proc.stdin.write(np.ascontiguousarray(a).tobytes())
 
     def add(self, fig_or_array, repeat=1):
         a = fig_to_array(fig_or_array) if hasattr(fig_or_array, 'canvas') else fig_or_array
-        self.frames += [a] * repeat
+        im = Image.fromarray(a)
+        if im.width > self.gif_width:
+            im = im.resize((self.gif_width, round(im.height * self.gif_width / im.width)), Image.Resampling.LANCZOS)
+        small = np.asarray(im)
+        for _ in range(repeat):
+            self._write_video(a)
+            self.frames.append(small)
+        self._last = a
 
     def hold(self, seconds):
-        self.frames += [self.frames[-1]] * int(round(seconds * self.fps))
+        for _ in range(int(round(seconds * self.fps))):
+            self._write_video(self._last)
+            self.frames.append(self.frames[-1])
 
     def save(self):
         os.makedirs(os.path.dirname(os.path.abspath(self.path)), exist_ok=True)
+        if self._proc:
+            self._proc.stdin.close()
+            self._proc.wait()
+            print(f'wrote {self.video_path}: {os.path.getsize(self.video_path) / 1e6:.1f} MB')
+            webm = to_webm(self.video_path)
+            print(f'wrote {webm}: {os.path.getsize(webm) / 1e6:.1f} MB')
         # one global palette avoids flicker between frames
         sample = np.concatenate([f[::4, ::4].reshape(-1, 3) for f in self.frames[::max(1, len(self.frames) // 24)]])
         pal = Image.fromarray(sample.reshape(1, -1, 3)).quantize(colors=255, method=Image.Quantize.MEDIANCUT)
