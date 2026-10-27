@@ -1,32 +1,51 @@
 // Interactive wave-optics lensing of gravitational waves by a compact dark-matter lens.
-// Same physics as python/lensviz/gw.py.
+// Amplification factors from FIONA tables (python/build_fiona_tables.py); waveform as python/lensviz/gw.py.
 'use strict';
 
 const T_SUN = 4.925490947e-6;               // G M_sun / c^3 [s]
-const P = { logM: Math.log10(300), y: 0.6, playing: true };
-let TABLE = null;
+const P = { logM: Math.log10(300), y: 0.6, lens: 'point', playing: true };
+let MAN = null, LENS = null;                 // FIONA manifest and the selected lens entry
+const TABLES = {};                           // lens id -> Float32Array of the residual R
 
-// ---------------------------------------------------------------- amplification factor
-function images(y) {
-  const s = Math.sqrt(y * y + 4);
-  return { muP: 0.5 + (y * y + 2) / (2 * y * s), muM: 0.5 - (y * y + 2) / (2 * y * s), dT: y * s / 2 + Math.log((s + y) / (s - y)) };
+// ---------------------------------------------------------------- amplification factor (FIONA tables)
+// F(w, y) = R(w, y) + s(w) F_GO(w, y): R is tabulated with FIONA (python/build_fiona_tables.py),
+// F_GO is the geometric-optics sum over the lens's images; times are measured from the first image.
+// y snaps to the table's nodes, so only w is interpolated. Above w_max, geometric optics alone.
+const yIndex = y => Math.min(MAN.y.length - 1, Math.max(0, Math.round((y - MAN.y[0]) / (MAN.y[1] - MAN.y[0]))));
+const goWeight = w => 0.5 * (1 + Math.tanh((w - MAN.w_ref) / (0.2 * MAN.w_ref)));
+function Fgo(w, imgs) {
+  let re = 0, im = 0;
+  for (const [phi, mu, n] of imgs) { const a = Math.sqrt(Math.abs(mu)), ph = w * phi - Math.PI * n; re += a * Math.cos(ph); im += a * Math.sin(ph); }
+  return [re, im];
 }
-function Fpoint(w, y) {
-  // geometric optics (two images, Morse phase -pi/2 on the second) + tabulated wave-optics residual
-  const im = images(y), a = Math.sqrt(Math.abs(im.muP)), b = Math.sqrt(Math.abs(im.muM));
-  let re = a + b * Math.sin(w * im.dT), imag = -b * Math.cos(w * im.dT);
-  const T = TABLE;
-  if (T && w < T.w_max - T.dw) {
-    const i = w / T.dw, i0 = Math.floor(i), fi = i - i0;
-    let j = (y - T.y_min) / T.dy; j = Math.min(Math.max(j, 0), T.n_y - 1.001);
-    const j0 = Math.floor(j), fj = j - j0;
-    const at = (jj, ii, c) => T.R[2 * (jj * T.n_w + ii) + c];
-    for (let c = 0; c < 2; c++) {
-      const r = (1 - fj) * ((1 - fi) * at(j0, i0, c) + fi * at(j0, i0 + 1, c)) + fj * ((1 - fi) * at(j0 + 1, i0, c) + fi * at(j0 + 1, i0 + 1, c));
-      if (c === 0) re += r; else imag += r;
-    }
-  }
-  return [re, imag];
+function Fprofile(w, jy) {
+  const W = MAN.w, imgs = LENS.images[jy];
+  if (w < W[0]) return [1, 0];
+  const [gr, gi] = Fgo(w, imgs);
+  if (w >= W[W.length - 1]) return [gr, gi];
+  let lo = 0, hi = W.length - 1;
+  while (hi - lo > 1) { const m = (lo + hi) >> 1; if (W[m] <= w) lo = m; else hi = m; }
+  const t = (w - W[lo]) / (W[hi] - W[lo]), R = TABLES[LENS.id], b = 2 * jy * W.length, s = goWeight(w);
+  return [(1 - t) * R[b + 2 * lo] + t * R[b + 2 * hi] + s * gr, (1 - t) * R[b + 2 * lo + 1] + t * R[b + 2 * hi + 1] + s * gi];
+}
+function images(jy) {
+  // arrival-ordered images that matter (|mu| >= 0.01, so not a cored lens's faint central image):
+  // delay between the first and the last, magnifications
+  const all = LENS.images[jy].slice().sort((a, b) => a[0] - b[0]);
+  const im = all.filter(i => Math.abs(i[1]) >= 0.01);
+  if (!im.length) im.push(all[0]);
+  return { dT: im[im.length - 1][0] - im[0][0], mu: im.map(i => Math.abs(i[1])) };
+}
+function psiLens(r) {
+  // lens potential psi(r) from the manifest (linear in ln r; flat below, log-linear above the range)
+  const R = LENS.psi_r, V = LENS.psi, n = R.length;
+  if (r <= R[0]) return V[0];
+  const x = Math.log(r);
+  if (r >= R[n - 1]) return V[n - 1] + (V[n - 1] - V[n - 2]) / Math.log(R[n - 1] / R[n - 2]) * (x - Math.log(R[n - 1]));
+  let lo = 0, hi = n - 1;
+  while (hi - lo > 1) { const m = (lo + hi) >> 1; if (R[m] <= r) lo = m; else hi = m; }
+  const t = (x - Math.log(R[lo])) / Math.log(R[hi] / R[lo]);
+  return V[lo] + t * (V[hi] - V[lo]);
 }
 const wOf = (f, M) => 8 * Math.PI * T_SUN * M * f;
 
@@ -60,10 +79,10 @@ const WAVE = (() => {
 })();
 
 function lensed(M, y) {
-  const re = new Float64Array(N), im = new Float64Array(N), fs = [], absF = [];
+  const re = new Float64Array(N), im = new Float64Array(N), fs = [], absF = [], jy = yIndex(y);
   for (let k = 0; k <= N / 2; k++) {
     const f = k * FS / N;
-    let [Fr, Fi] = k === 0 ? [1, 0] : (f < 2100 ? Fpoint(wOf(f, M), y) : [1, 0]);
+    let [Fr, Fi] = k === 0 ? [1, 0] : (f < 2100 ? Fprofile(wOf(f, M), jy) : [1, 0]);
     if (k > 0 && f < 2100 && k % 2 === 0) { fs.push(f); absF.push(Math.hypot(Fr, Fi)); }
     Fi = -Fi;                                            // conj(F): LALSuite convention, later image arrives later
     const a = WAVE.re[k], b = WAVE.im[k];
@@ -81,12 +100,12 @@ const einstein2d = s => { const dl = FIELD.lensX - FIELD.src[0], dls = FIELD.det
 
 function huygens(M, y) {
   const { nx, ny, x0, x1, y0, y1, src, lensX, lam } = FIELD, k = 2 * Math.PI / lam;
-  const s = strength2d(M), ly = -y * einstein2d(s), core = 0.03, half = 7, nl = 420;
+  const s = strength2d(M), theta = einstein2d(s), ly = -y * theta, core = 0.03, half = 7, nl = 420;
   const Ure = new Float32Array(nx * ny), Uim = new Float32Array(nx * ny);
   const lr = new Float64Array(nl), li = new Float64Array(nl), ll = new Float64Array(nl), dl = 2 * half / (nl - 1);
   for (let j = 0; j < nl; j++) {
     const l = ly - half + j * dl, r1 = Math.hypot(lensX - src[0], l - src[1]);
-    const psi = s * Math.log(Math.sqrt((l - ly) ** 2 + core * core));
+    const psi = s * psiLens(Math.sqrt((l - ly) ** 2 + core * core) / theta);
     const win = Math.sqrt(Math.cos(Math.PI / 2 * Math.min(Math.abs(l - ly) / half, 1)));
     const ph = k * (r1 - psi), a = win / Math.sqrt(r1);
     lr[j] = a * Math.cos(ph); li[j] = a * Math.sin(ph); ll[j] = l;
@@ -157,19 +176,20 @@ function drawPlots() {
   });
   const f1 = 1 / (8 * Math.PI * T_SUN * M);
   plot(cvF, {
-    series: [{ x: L.f, y: L.absF, color: CYAN, width: 1.4 }], xlog: true, xlim: [5, 2000], ylim: [0, 3.2],
+    series: [{ x: L.f, y: L.absF, color: CYAN, width: 1.4 }], xlog: true, xlim: [5, 2000], ylim: [0, Math.max(3.2, 1.08 * Math.max(...L.absF))],
     xlabel: 'frequency [Hz]', ylabel: '|F(f)|', bands: [{ x0: 20, x1: 1000, label: 'LIGO band' }],
     vlines: f1 > 5 && f1 < 2000 ? [{ x: f1, color: ACCENT, label: 'w = 1' }] : [],
   });
-  const im = images(P.y), dt = 4 * T_SUN * M * im.dT * 1e3;
+  const im = images(yIndex(P.y)), dt = 4 * T_SUN * M * im.dT * 1e3;
   document.getElementById('readout').innerHTML =
-    `<span>time delay <b>${dt < 1 ? dt.toFixed(3) : dt.toFixed(1)} ms</b></span>` +
-    `<span>magnifications <b>${im.muP.toFixed(2)}</b>, <b>${Math.abs(im.muM).toFixed(2)}</b></span>` +
+    (im.mu.length > 1 ? `<span>time delay <b>${dt < 1 ? dt.toFixed(3) : dt.toFixed(1)} ms</b></span>` : `<span>geometric optics <b>one image</b></span>`) +
+    `<span>magnification${im.mu.length > 1 ? 's' : ''} ${im.mu.map(m => `<b>${m.toFixed(2)}</b>`).join(', ')}</span>` +
     `<span>w at 100 Hz <b>${wOf(100, M).toFixed(2)}</b></span>` +
     `<span>regime <b>${wOf(100, M) < 0.3 ? 'diffraction: the lens is nearly invisible' : wOf(100, M) < 20 ? 'wave optics: interference' : 'geometric optics: two images'}</b></span>`;
 }
 
 const recompute = throttleFrame(() => {
+  if (!LENS || !TABLES[LENS.id]) return;
   const M = Math.pow(10, P.logM);
   L = lensed(M, P.y); drawPlots();
   U = huygens(M, P.y); drawField();
@@ -184,6 +204,39 @@ function bind(id, fmt, set) {
 bind('mass', v => supMass(Math.pow(10, v)), v => { P.logM = v; });
 bind('impact', v => v.toFixed(2), v => { P.y = v; });
 
+// ---------------------------------------------------------------- lens profile selector
+const profBox = document.getElementById('profile'), shapeBox = document.getElementById('shape'), shapeCtl = document.getElementById('shape-ctl');
+const SHORT = { PointLens: 'Point mass', CIS: 'Cored isothermal', NFW: 'NFW', ULA: 'ULA soliton' };
+const PARAM_LABEL = { x_c: 'core radius x<sub>c</sub>', x_s: 'scale radius x<sub>s</sub>', r_s: 'soliton radius r<sub>s</sub>' };
+function segButtons(box, items, current, onPick) {
+  box.innerHTML = '';
+  for (const it of items) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.innerHTML = it.label; b.setAttribute('aria-pressed', String(it.key === current));
+    b.addEventListener('click', () => onPick(it.key));
+    box.appendChild(b);
+  }
+}
+function selectLens(id) {
+  LENS = MAN.lenses.find(l => l.id === id);
+  P.lens = id;
+  const models = [...new Map(MAN.lenses.map(l => [l.model, l])).values()];
+  segButtons(profBox, models.map(l => ({ key: l.model, label: SHORT[l.model] || l.label })), LENS.model,
+             m => selectLens(MAN.lenses.find(l => l.model === m && (m !== LENS.model || l.id === LENS.id)).id));
+  const variants = MAN.lenses.filter(l => l.model === LENS.model);
+  shapeCtl.hidden = !LENS.param;
+  if (LENS.param) {
+    shapeCtl.querySelector('label span').innerHTML = PARAM_LABEL[LENS.param] + ' (Einstein radii)';
+    segButtons(shapeBox, variants.map(l => ({ key: l.id, label: String(l.value) })), LENS.id, selectLens);
+  }
+  document.getElementById('F-caption').textContent = LENS.param ? `${LENS.label}, ${LENS.param.replace('_', '')} = ${LENS.value} · FIONA` : `${LENS.label} · FIONA`;
+  loadTable(LENS).then(recompute);
+}
+function loadTable(l) {
+  if (TABLES[l.id]) return Promise.resolve();
+  return fetch('assets/fiona/' + l.file).then(r => r.arrayBuffer()).then(b => { TABLES[l.id] = new Float32Array(b); });
+}
+
 const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const playBtn = document.getElementById('play');
 P.playing = !reduce;
@@ -196,6 +249,8 @@ function loop(ts) {
   requestAnimationFrame(loop);
 }
 
-Promise.all([fetch('assets/F_point_table.json').then(r => r.json()), fetch('assets/F_point_table.bin').then(r => r.arrayBuffer())])
-  .then(([meta, buf]) => { TABLE = Object.assign(meta, { R: new Float32Array(buf) }); recompute(); if (P.playing) requestAnimationFrame(loop); });
+fetch('assets/fiona/manifest.json').then(r => r.json()).then(m => {
+  MAN = m; selectLens(P.lens);
+  if (P.playing) requestAnimationFrame(loop);
+});
 window.addEventListener('resize', throttleFrame(() => { drawField(); if (L) drawPlots(); }));
