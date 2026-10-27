@@ -64,5 +64,29 @@
       where it departs from a research calculation.</p>
   </div>
 </main>
+<dialog class="lightbox" id="lightbox" aria-label="Enlarged animation">
+  <button class="lb-close" type="button" aria-label="Close">&times;</button>
+  <img alt="">
+  <p class="lb-cap"></p>
+</dialog>
+<script>
+// Click a GIF to view it almost full screen; click anywhere or press Esc to close.
+(() => {
+  const dlg = document.getElementById('lightbox'), big = dlg.querySelector('img'), cap = dlg.querySelector('.lb-cap');
+  document.querySelectorAll('.gallery img').forEach(img => {
+    img.tabIndex = 0;
+    img.setAttribute('role', 'button');
+    const open = () => {
+      big.src = img.src; big.alt = img.alt;
+      cap.textContent = img.closest('figure').querySelector('figcaption').firstChild.textContent.trim();
+      dlg.showModal();
+    };
+    img.addEventListener('click', open);
+    img.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+  });
+  dlg.addEventListener('click', () => dlg.close());
+  dlg.addEventListener('close', () => { big.removeAttribute('src'); });
+})();
+</script>
 </body>
 </html>
