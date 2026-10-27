@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gravitational-wave lensing, interactively · Nino Ephremidze</title>
+<meta name="description" content="Change the mass of a dark-matter lens and watch gravitational waves from a binary black hole diffract, interfere and split into two images.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="lensing.css">
+</head>
+<body>
+<main class="wrap">
+  <a class="crumb" href="./">Lensing visualizations</a>
+  <h1>Gravitational waves passing a dark matter subhalo</h1>
+  <div class="lede">
+    <p>Gravitational waves from merging black holes have wavelengths of hundreds to thousands of
+      kilometres. When a lens is comparable in size, the waves do not just bend: they diffract and
+      interfere, leaving a frequency-dependent imprint on the signal.</p>
+    <p>Change the lens mass to move from diffraction, where the lens is almost invisible, through
+      interference, to geometric optics, where the detector records two copies of the signal.</p>
+  </div>
+
+  <figure class="panel">
+    <figcaption><span>Wave field</span><span>two-dimensional toy, not to scale</span></figcaption>
+    <canvas id="cv-field" width="960" height="480" style="aspect-ratio:2/1" aria-label="Animated gravitational wave field passing a lens"></canvas>
+  </figure>
+
+  <div class="controls">
+    <div class="ctl">
+      <label for="mass"><span>lens mass M<sub>Lz</sub></span><output for="mass"></output></label>
+      <input id="mass" type="range" min="0.5" max="4" step="0.02" value="2.48">
+    </div>
+    <div class="ctl">
+      <label for="impact"><span>impact parameter y (Einstein radii)</span><output for="impact"></output></label>
+      <input id="impact" type="range" min="0.2" max="3" step="0.02" value="0.6">
+    </div>
+    <div class="ctl">
+      <label>animation</label>
+      <button type="button" id="play">Pause waves</button>
+    </div>
+  </div>
+  <div class="readout" id="readout"></div>
+
+  <div class="stage" style="grid-template-columns:repeat(auto-fit,minmax(20rem,1fr));margin-top:1.6rem">
+    <figure class="panel">
+      <figcaption><span>Waveform at the detector</span><span>30 + 30 M☉ binary</span></figcaption>
+      <canvas id="cv-wave" width="560" height="300" style="aspect-ratio:560/300"></canvas>
+    </figure>
+    <figure class="panel">
+      <figcaption><span>Amplification factor |F(f)|</span><span>point-mass lens</span></figcaption>
+      <canvas id="cv-F" width="560" height="300" style="aspect-ratio:560/300"></canvas>
+    </figure>
+  </div>
+
+  <h2>What you are looking at</h2>
+  <div class="notes">
+    <p>The lensed signal is the unlensed one multiplied, frequency by frequency, by the amplification
+      factor F(w, y), with w = 8πG M<sub>Lz</sub> f / c³. Below w ≈ 1 the wavelength is larger than the
+      lens and F ≈ 1. Well above it, F is the sum of two images, the second delayed by Δt, which
+      shows up as regular oscillations in |F(f)| and as beating, then an echo, in the waveform.</p>
+    <p>F here is the exact point-mass result (Takahashi &amp; Nakamura 2003), evaluated as the
+      geometric-optics sum plus a tabulated wave-optics correction, accurate to better than 1% for
+      most settings. For extended lenses such as NFW or cored halos, F has to be computed numerically,
+      which is what <a href="https://arxiv.org/abs/2603.12333">FIONA</a> does efficiently. The waveform is a simple
+      inspiral–merger–ringdown model with the right shape, not a precision template.</p>
+    <p>The wave field above is a two-dimensional Huygens–Fresnel calculation through a thin
+      gravitational phase screen. It shows the same physics, diffraction and interference behind the
+      lens, but its wavelength and geometry are chosen for display.</p>
+  </div>
+</main>
+<script src="js/common.js"></script>
+<script src="js/gw.js"></script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cluster lensing, interactively · Nino Ephremidze</title>
+<meta name="description" content="Drag a JWST galaxy behind a galaxy cluster, then perturb its lensed images with a dark-matter subhalo or with wave-like dark matter.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="lensing.css">
+</head>
+<body>
+<main class="wrap">
+  <a class="crumb" href="./">Lensing visualizations</a>
+  <h1>A galaxy behind a galaxy cluster</h1>
+  <div class="lede">
+    <p>A galaxy cluster bends the light of a background galaxy into several images. Drag the galaxy
+      in the source plane and watch its images form, merge and split. Click anywhere in the image
+      plane to zoom in there.</p>
+    <p>Then add dark matter: a single subhalo, which you can drag across the arc, or the granular
+      density fluctuations of wave-like dark matter, which perturb the whole arc at once.</p>
+  </div>
+
+  <div class="stage four">
+    <figure class="panel">
+      <figcaption><span>Source plane</span><span>drag the galaxy · caustics in gold</span></figcaption>
+      <canvas id="cv-source" class="drag" width="256" height="256" aria-label="Source plane: drag to move the background galaxy"></canvas>
+    </figure>
+    <figure class="panel">
+      <figcaption><span>Image plane, ±16″</span><span>click to zoom · critical curves in blue</span></figcaption>
+      <canvas id="cv-image" class="pick" width="320" height="320" aria-label="Image plane: click to choose where to zoom"></canvas>
+    </figure>
+    <figure class="panel">
+      <figcaption><span>Zoom on the arc, ±1.6″</span><span class="only-subhalo">drag the subhalo</span></figcaption>
+      <canvas id="cv-zoom" class="drag" width="256" height="256" aria-label="Zoomed arc: drag to move the subhalo"></canvas>
+    </figure>
+    <figure class="panel">
+      <figcaption><span>Change in the image</span><span>excess in garnet, deficit in blue</span></figcaption>
+      <canvas id="cv-resid" width="256" height="256" aria-label="Difference between the perturbed and smooth images"></canvas>
+    </figure>
+  </div>
+
+  <div class="controls">
+    <div class="ctl">
+      <label>Dark matter</label>
+      <div class="seg">
+        <button type="button" data-mode="subhalo" aria-pressed="true">One subhalo</button>
+        <button type="button" data-mode="wave" aria-pressed="false">Wave-like DM</button>
+      </div>
+    </div>
+    <div class="ctl only-subhalo">
+      <label for="mass"><span>subhalo mass</span><output for="mass"></output></label>
+      <input id="mass" type="range" min="8" max="10.5" step="0.05" value="9.7">
+    </div>
+    <div class="ctl only-subhalo">
+      <label for="profile">density profile</label>
+      <select id="profile">
+        <option value="nfw">NFW (cold dark matter)</option>
+        <option value="cored">Cored (self-interacting DM)</option>
+        <option value="point">Point mass (primordial black hole)</option>
+      </select>
+    </div>
+    <div class="ctl only-subhalo" id="shape-ctl">
+      <label for="shape"><span id="shape-label">NFW scale radius r_s</span><output for="shape"></output></label>
+      <input id="shape" type="range" min="0.03" max="1.5" step="0.01" value="0.43">
+    </div>
+    <div class="ctl only-wave" hidden>
+      <label for="lam"><span>granule size λ<sub>dB</sub></span><output for="lam"></output></label>
+      <input id="lam" type="range" min="0.1" max="2.5" step="0.02" value="0.8">
+    </div>
+    <div class="ctl only-wave" hidden>
+      <label for="amp"><span>fluctuation amplitude</span><output for="amp"></output></label>
+      <input id="amp" type="range" min="0.005" max="0.15" step="0.005" value="0.06">
+    </div>
+    <div class="ctl only-wave" hidden>
+      <label>realization</label>
+      <button type="button" id="reseed">Draw new granules</button>
+    </div>
+    <div class="ctl">
+      <label>source galaxy</label>
+      <label class="file">Use your own image<input id="upload" type="file" accept="image/*"></label>
+    </div>
+  </div>
+  <div class="readout" id="readout"></div>
+
+  <h2>Residual power spectrum</h2>
+  <div class="stage" style="grid-template-columns:minmax(0,2fr) minmax(0,1fr)">
+    <figure class="panel">
+      <figcaption><span>P(k) of the change in the image</span><span><button type="button" id="keep" class="ctl" style="background:none;border:0;padding:0;color:inherit;cursor:pointer">Keep this curve for comparison</button></span></figcaption>
+      <canvas id="cv-pk" width="640" height="300" style="aspect-ratio:640/300"></canvas>
+    </figure>
+    <figure class="panel only-wave" hidden>
+      <figcaption><span>Granule convergence δκ</span><span>zoom region</span></figcaption>
+      <canvas id="cv-kappa" width="256" height="256"></canvas>
+    </figure>
+  </div>
+
+  <h2>What you are looking at</h2>
+  <div class="notes">
+    <p>The cluster is a cored isothermal ellipsoid at z = 0.4 with an Einstein radius of about 18″; the
+      galaxy, cut from a JWST deep field, sits at z = 1 and is 0.75″ (about 6 kpc) across. Each pixel
+      of the image plane is traced back to the source plane through the lens equation β = θ − α(θ).</p>
+    <p>A real lens model would re-fit the smooth cluster and the source, absorbing any shift or
+      stretch that is uniform across the arc. To show only what such a fit could not absorb, the
+      constant and linear parts of the perturbing deflection (weighted by the arc's brightness) are
+      removed before computing the change in the image.</p>
+    <p>The wave-like dark matter field is a Gaussian random field whose correlation length is the de
+      Broglie wavelength. Its amplitude here is a free, illustrative parameter, larger than the
+      physical prediction so that the effect is easy to see. The power spectrum of the change in the
+      image is the statistic used in <a href="https://arxiv.org/abs/2605.30649">Ephremidze, Gilman &amp; Dvorkin (2026)</a>.</p>
+  </div>
+</main>
+<script src="js/common.js"></script>
+<script src="js/cluster.js"></script>
+</body>
+</html>
